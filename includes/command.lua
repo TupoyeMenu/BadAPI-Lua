@@ -25,14 +25,14 @@ local default_convar_flags =
 
 ---@param name string
 ---@param callback function Arguments are: (player_id, args)
----@param complition_callback function|nil
----@param help_text string|nil
----@param flags command_flags|nil
----@return table|nil command
+---@param complition_callback function?
+---@param help_text string?
+---@param flags command_flags?
+---@return table? command
 function command.add(name, callback, complition_callback, help_text, flags)
 	if not isstring(name) then print_stacktrace("bad argument 'name' for 'command.add'.\nExpected string got " .. type(name) .. "\nIn:") return end
 	if not isfunction(callback) then print_stacktrace("bad argument 'callback' for 'command.add'.\nExpected function got " .. type(callback) .. "\nIn:") return end
-	if complition_callback ~= nil and not not isfunction(complition_callback) then print_stacktrace("bad argument 'complition_callback' for 'command.add'.\nExpected function got " .. type(complition_callback) .. "\nIn:") return end
+	if complition_callback ~= nil and not isfunction(complition_callback) then print_stacktrace("bad argument 'complition_callback' for 'command.add'.\nExpected function got " .. type(complition_callback) .. "\nIn:") return end
 	if help_text ~= nil and not isstring(help_text) then print_stacktrace("bad argument 'help_text' for 'command.add'.\nExpected string got " .. type(help_text) .. "\nIn:") return end
 	if flags ~= nil and not istable(flags) then print_stacktrace("bad argument 'flags' for 'command.add'.\nExpected table got " .. type(flags) .. "\nIn:") return end
 
@@ -99,7 +99,10 @@ local function convar_callback(player_id, args)
 end
 
 ---@param name string
----@return table|nil convar
+---@param default_value string
+---@param help_text string?
+---@param flags command_flags?
+---@return table? convar
 function convar.add(name, default_value, help_text, flags)
 	if not isstring(name) then print_stacktrace("bad argument 'name' for 'convar.add'.\nExpected string got " .. type(name) .. "\nIn:") return end
 	if not isstring(default_value) then print_stacktrace("bad argument 'default_value' for 'convar.add'.\nExpected string got " .. type(default_value) .. "\nIn:") return end
@@ -114,7 +117,8 @@ function convar.add(name, default_value, help_text, flags)
 		callback = convar_callback,
 		help_text = help_text,
 		flags = flags,
-		value = default_value
+		value = default_value,
+		default_value = default_value
 	}
 
 	return commands[name]
@@ -123,8 +127,9 @@ end
 
 ---Turns command_string to command table
 ---@param command_string string
+---@param allow_warnings boolean?
 ---@return table command_args
-function command.parse(command_string)
+function command.parse(command_string, allow_warnings)
 	-- Pasted from: https://stackoverflow.com/a/28664691
 	local args = {}
 	local spat, epat = [=[^(['"])]=], [=[(['"])$]=]
@@ -144,7 +149,7 @@ function command.parse(command_string)
 			args[#args+1] = str:gsub(spat, ""):gsub(epat, "")
 		end
 	end
-	if buf then
+	if buf and allow_warnings then
 		log_warning("Missing matching quote for "..buf)
 	end
 
@@ -160,7 +165,7 @@ function command.call(player_id, cmd)
 
 	log_info("> " .. cmd)
 
-	local args = command.parse(cmd)
+	local args = command.parse(cmd, true)
 	local name = args[1]
 	if name then
 		if commands[name] then

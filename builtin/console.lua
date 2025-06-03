@@ -5,8 +5,74 @@ local console_open = false
 local lines = {}
 local num_messages
 local console_text
-local command_input = ""
+local command_buffer = ""
 local should_set_focus = false
+local command_history = {}
+local history_index = 0
+
+---@param text string
+---@param missing_only boolean? Results will only contain the part of the string that is missing
+---@return table
+local function get_suggestions(text, missing_only)
+	local command_table = command.get_table()
+	local args = command.parse(text, false)
+	local results = {}
+
+	if #args == 1 then
+		for key, value in pairs(command_table) do
+			if string.startswith(key, args[1]) then
+				results[#results+1] = key
+			end
+		end
+	elseif #args > 1 then
+		results[1] = args[1]
+		local command = command_table[args[1]]
+		if command.complition_callback then
+			results = command.complition_callback(args)
+		end
+	end
+
+	-- Display history
+	if #results == 0 and args[2] == nil then
+		results = command_history
+	end
+
+	if missing_only and #results > 0 and #args > 0 then
+		local new_results = {}
+		for index, value in ipairs(results) do
+			new_results[index] = string.sub(value, #args[#args]+1)
+		end
+		results = new_results
+	end
+	return results
+end
+
+local function add_to_history(text)
+	local already_in_history = false
+	for index, value in ipairs(command_history) do
+		if value == text then
+			already_in_history = true
+			break
+		end
+	end
+	if not already_in_history then
+		command_history[#command_history+1] = text
+		history_index = #command_history+1
+	end
+end
+
+local function draw_suggestions()
+	--[[
+	if command_buffer == "" then
+		ImGui.CloseCurrentPopup()
+		return
+	end
+	]]
+	local suggestions = get_suggestions(command_buffer, true)
+	for key, value in ipairs(suggestions) do
+		ImGui.Selectable(value, false)
+	end
+end
 
 function toggle_console()
 	console_open = not console_open
@@ -47,8 +113,6 @@ end
 local keyup = 515
 local keydown = 516
 local keytab = 512
-local command_history = {}
-local history_index = 0
 local function callback_func(data)
 	if data.EventKey == keyup and #command_history and history_index > 1 then
 		history_index = history_index - 1
@@ -62,13 +126,19 @@ local function callback_func(data)
 	end
 
 	if data.EventKey == keytab then
-
+		local suggestions = get_suggestions(data.Buf, true)
+		if #suggestions == 1 then
+			data:InsertChars(data.BufTextLen, suggestions[1])
+		end
 	end
 end
 
 event.register_handler(menu_event.Draw, "Console", function()
 	if not console_open then return end
 
+	local x = menu_exports.get_screen_resolution_x() * 0.4
+	local y = menu_exports.get_screen_resolution_y() * 0.6
+	ImGui.SetNextWindowSize(x,y, ImGuiCond.FirstUseEver)
 	if(ImGui.Begin("Console", ImGuiWindowFlags.NoScrollbar)) then
 		local messages = log.get_log_messages()
 		if num_messages ~= #messages then
@@ -122,13 +192,27 @@ event.register_handler(menu_event.Draw, "Console", function()
 			ImGui.SetKeyboardFocusHere()
 		end
 		local result
-		command_input, result = ImGui.InputTextWithHint("##ConsoleInput", "Command", command_input, 128, bit.bor(ImGuiInputTextFlags.EnterReturnsTrue, ImGuiInputTextFlags.CallbackHistory, ImGuiInputTextFlags.CallbackCompletion), callback_func)
+		command_buffer, result = ImGui.InputTextWithHint("##ConsoleInput", "Command", command_buffer, 128, bit.bor(ImGuiInputTextFlags.EnterReturnsTrue, ImGuiInputTextFlags.CallbackHistory, ImGuiInputTextFlags.CallbackCompletion), callback_func)
 		if(result) then
-			command.call(0, command_input)
-			command_history[#command_history+1] = command_input
-			history_index = #command_history+1
-			command_input = ""
+			command.call(0, command_buffer)
+			if #command_buffer > 0 then -- Don't insert empty strings to history
+				add_to_history(command_buffer)
+			end
+			command_buffer = ""
 			should_set_focus = true
+		end
+
+		local input_text_active = ImGui.IsItemActive()
+		if input_text_active then
+			ImGui.OpenPopup("##autocomplete")
+		end
+
+		local x,_ = ImGui.GetItemRectMin()
+		local _,y = ImGui.GetItemRectMax()
+		ImGui.SetNextWindowPos(x,y)
+		if ImGui.BeginPopup("##autocomplete", bit.bor(ImGuiWindowFlags.NoTitleBar, ImGuiWindowFlags.NoMove, ImGuiWindowFlags.NoResize, ImGuiWindowFlags.NoDocking, ImGuiWindowFlags.ChildWindow)) then
+			draw_suggestions()
+			ImGui.EndPopup()
 		end
 	end
 	ImGui.End()

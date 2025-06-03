@@ -1,7 +1,9 @@
+#if defined(__CDT_PARSER__) || defined (__INTELLISENSE__) || defined (Q_CREATOR_RUN) || defined (__clang__)
 #include <stddef.h>
 #include <stdint.h>
 #include <unistd.h>
 #include "stdbool.h"
+#endif
 
 
 
@@ -82,31 +84,40 @@ struct CNavigation
 };
 #pragma pack(pop)
 
+
+
 #pragma pack(push, 1)
-struct fwEntity
+struct fwExtensibleBase
 {
 	void* vtable;
 	void* m_ref;
 	void* m_extension_container;
 	void* m_extensible_unk;
-	uint64_t* m_model_info; //0x0020
-	uint8_t m_entity_type; //0x0028
+};
+#pragma pack(pop)
+
+#pragma pack(push, 8)
+struct fwEntity
+{
+	struct fwExtensibleBase;
+	uint64_t* m_ModelInfo; //0x0020
+	uint8_t m_Type; //0x0028
 	char gap29; //0x0029
 	uint16_t gap2A; //0x002A
-	uint32_t m_flags; //0x002D
-	struct CNavigation* m_navigation; //0x0030
+	uint32_t m_Flags; //0x002D
+	struct CNavigation* m_Navigation; //0x0030
 	uint16_t gap38; //0x0038
 	uint16_t gap3A; //0x003A
 	uint32_t gap3C; //0x003C
-	uint64_t* m_dynamic_entity_component; //0x0040 (stores attachments and stuff)
-	uint64_t* m_draw_data; //0x0048
+	uint64_t* m_DynamicEntityComponent; //0x0040 (stores attachments and stuff)
+	uint64_t* m_DrawData; //0x0048
 	uint64_t* gap50; //0x0050
 	uint64_t gap58; //0x0058
-	fmatrix44 m_transformation_matrix; //0x0060
-	struct fwEntity* m_render_focus_entity; //0x00A0
-	uint32_t m_render_focus_distance; //0x00A8
-	uint32_t m_flags_2; //0x00AC
-	uint32_t m_shadow_flags; //0x00B0
+	fmatrix44 m_Transform; //0x0060
+	struct fwEntity* m_RenderFocusEntity; //0x00A0
+	uint32_t m_RenderFocusDistance; //0x00A8
+	uint32_t m_Flags2; //0x00AC
+	uint32_t m_ShadowFlags; //0x00B0
 	char gapB4[4]; //0x00B4
 	uint8_t byteB8; //0x00B8
 };
@@ -115,8 +126,6 @@ struct fwEntity
 struct CEntity
 {
 	struct fwEntity;
-	uint8_t gapB9; //0x00B9
-	char gapBA[6]; //0x00BA
 	uint32_t m_flags_3; //0x00C0
 	uint32_t m_flags_4; //0x00C4
 	uint32_t dwordC8;
@@ -126,8 +135,27 @@ struct CEntity
 struct CDynamicEntity
 {
 	struct CEntity;
-	struct netObject* m_net_object;
-	char gapD8[16];
+	struct netObject* m_NetObject;
+	struct 
+	{
+		uint16_t unk0 : 1;
+		uint16_t unk1 : 1;
+		uint16_t unk2 : 1;
+		uint16_t unk3 : 1;
+		uint16_t unk4 : 1;
+		uint16_t unk5 : 1;
+		uint16_t unk6 : 1;
+		uint16_t unk7 : 1;
+		uint16_t unk8 : 1;
+		uint16_t unk9 : 1;
+		uint16_t unk10 : 1;
+		uint16_t unk11 : 1;
+		uint16_t unk12 : 1;
+		uint16_t unk13 : 1;
+		uint16_t unk14 : 1;
+		uint16_t unk15 : 1;
+	} m_DynamicFlags;
+	char gapD8[14];
 	uint64_t qwordE8;
 };
 
@@ -143,12 +171,48 @@ struct CAttackers
 #pragma pack(pop)
 
 #pragma pack(push, 1)
+struct DamageFlags
+{
+	uint32_t unk0 : 1;
+	uint32_t unk1 : 1;
+	uint32_t unk2 : 1;
+	uint32_t unk3 : 1;
+	uint32_t isBulletProof : 1;
+	uint32_t isFireProof : 1;
+	uint32_t isCollisionProof : 1;
+	uint32_t isMeleeProof : 1;
+	uint32_t isInvincible : 1;
+	uint32_t unk9 : 1;
+	uint32_t unk10 : 1;
+	uint32_t isExplosionProof : 1;
+	uint32_t unk12 : 1;
+	uint32_t unk13 : 1;
+	uint32_t unk14 : 1;
+	uint32_t isSteamProof : 1;
+	uint32_t isWaterProof : 1;
+	uint32_t unk17 : 1;
+	uint32_t unk18 : 1;
+	uint32_t unk19 : 1;
+	uint32_t unk20 : 1;
+	uint32_t unk21 : 1;
+	uint32_t unk22 : 1;
+	uint32_t unk23 : 1;
+	uint32_t unk24 : 1;
+	uint32_t unk25 : 1;
+	uint32_t unk26 : 1;
+	uint32_t unk27 : 1;
+	uint32_t unk28 : 1;
+	uint32_t unk29 : 1;
+	uint32_t unk30 : 1;
+	uint32_t unk31 : 1;
+};
+
 struct CPhysical
 {
 	struct CDynamicEntity;
 	char gapF0[144];
 	uint64_t qword180;
-	uint32_t m_damage_bits; //0x0188
+	struct DamageFlags m_damage_bits; //0x0188
 	uint8_t m_hostility; //0x018C
 	char gap18D[3];
 	uint8_t byte190;
@@ -751,50 +815,59 @@ struct scrNativeCallContext
 
 enum eThreadState
 {
-	running,
-	idle,
-	killed,
-	paused
+	IDLE,
+	RUNNING,
+	KILLED,
+	PAUSED,
+	UNK4
 };
 
 struct scrThreadContext
 {
-	uint32_t m_thread_id;                // 0x00
-	uint32_t m_script_hash;              // 0x04
-	enum eThreadState m_state;           // 0x08
-	uint32_t m_instruction_pointer;      // 0x0C
-	uint32_t m_frame_pointer;            // 0x10
-	uint32_t m_stack_pointer;            // 0x14
-	float m_timer_a;                     // 0x18
-	float m_timer_b;                     // 0x1C
-	float m_wait_timer;                  // 0x20
-	char m_padding1[0x2C];               // 0x24
-	uint32_t m_stack_size;               // 0x50
-	char m_padding2[0x10];               // 0x54
-	uint8_t m_call_depth;                // 0x64
-	uint32_t m_call_stack[16];           // 0x68
+	uint32_t m_ThreadId;
+#if ENHANCED
+	uint64_t m_ScriptHash;
+#else
+	uint32_t m_ScriptHash;
+#endif
+	enum eThreadState m_State;
+	uint32_t m_ProgramCounter;
+	uint32_t m_FramePointer;
+	uint32_t m_StackPointer;
+	float m_TimerA;
+	float m_TimerB;
+	float m_WaitTimer;
+	char m_padding1[0x2C];
+	uint32_t m_StackSize;
+	char m_padding2[0x10];
+	uint8_t m_CallDepth;
+	uint32_t m_CallStack[16];
 };
 
 struct scrThread
 {
 	void* vtable;
-	struct scrThreadContext m_context;          // 0x08
-	union scrValue* m_stack;                    // 0xB0
-	char m_padding[0x4];                        // 0xB8
-	uint32_t m_arg_size;                        // 0xBC
-	uint32_t m_arg_loc;                         // 0xC0
-	char m_padding2[0x4];                       // 0xC4
-	const char* m_exit_message;                 // 0xC8
-	char m_pad[0x4];                            // 0xD0
-	char m_name[0x40];                          // 0xD4
-	struct scriptHandler* m_handler;                   // 0x118
-	struct scriptHandlerNetComponent* m_net_component; // 0x120
+	struct scrThreadContext m_Context;
+	union scrValue* m_Stack;
+	char m_padding[0x4];
+	uint32_t m_ParameterSize;
+	uint32_t m_ParameterLoc;
+	char m_padding2[0x4];
+#if ENHANCED
+	char m_ErrorMessage[128];
+#else
+	const char* m_ErrorMessage;
+#endif
+	uint32_t m_ScriptHash;
+	char m_ScriptName[0x40];
 };
 
 struct GtaThread
 {
 	struct scrThread;
-	uint32_t m_script_hash;                    // 0x120
+	struct scriptHandler* m_ScriptHandler;
+	struct scriptHandlerNetComponent* m_NetComponent;
+	uint32_t m_ScriptHash2;                    // 0x120
 	char m_padding3[0x14];                     // 0x124
 	int32_t m_instance_id;                     // 0x138
 	char m_padding4[0x04];                     // 0x13C

@@ -9,7 +9,7 @@ function entity.take_control_of(entity_index, timeout)
 		timeout = 300
 	end
 	--TODO: Port to lua
-	entities.take_control_of(entity_index, timeout)
+	return entities.take_control_of(entity_index, timeout)
 end
 
 ---Loads the model into memory so you can spawn it later

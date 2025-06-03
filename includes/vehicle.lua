@@ -1,3 +1,4 @@
+local ffi = require("ffi")
 local STREAMING = STREAMING
 local ENTITY = ENTITY
 local VEHICLE = VEHICLE
@@ -159,4 +160,63 @@ function vehicle.downgrade(veh)
 	for i = 0, 50, 0 do
 		VEHICLE.REMOVE_VEHICLE_MOD(veh, i)
 	end
+end
+
+function vehicle.fix(veh)
+	VEHICLE.SET_VEHICLE_FIXED(veh)
+	VEHICLE.SET_VEHICLE_DIRT_LEVEL(veh, 0)
+	local veh_ptr = ffi.cast("struct CVehicle*", menu_exports.handle_to_ptr(veh))
+	if veh_ptr then -- Fix water damage
+		veh_ptr.m_DynamicFlags.unk0 = 0
+		veh_ptr.m_DynamicFlags.unk1 = 0
+		veh_ptr.m_DynamicFlags.unk2 = 0
+	end
+end
+
+local vehicles_table
+event.register_handler(menu_event.LuaInitFinished, "LoadVehiclesJson", function()
+	local vehicles_file = io.open("vehicles.json", "r")
+	local vehicles_json
+	if vehicles_file then
+		vehicles_json = vehicles_file:read("*a")
+		vehicles_file:close()
+		vehicles_table = json.decode(vehicles_json)
+	else
+		log.fatal("vehicles.json not found")
+	end
+end)
+
+local is_dlc_present
+if menu_exports.is_enhanced() then
+	is_dlc_present = ffi.cast("bool(*)(uint32_t dlcHash)", menu_exports.scan_pattern("81 F9 E6 2E F0 96", "") - 5)
+else
+	is_dlc_present = ffi.cast("bool(*)(uint32_t dlcHash)", menu_exports.scan_pattern("81 F9 6D 9F 11 0B", "") - 10)
+end
+
+
+---@param include_missing_vehicles boolean?
+---@return table?
+function vehicle.get_data_for_all_vehicles(include_missing_vehicles)
+	if vehicles_table == nil then return end
+	local result_table = {}
+	for key, value in ipairs(vehicles_table) do
+		if (include_missing_vehicles or value.DlcName == "TitleUpdate" or is_dlc_present(menu_exports.joaat(value.DlcName))) then
+			result_table[#result_table+1] = value
+		end
+	end
+	return result_table
+end
+
+---@param include_missing_vehicles boolean?
+---@return table?
+function vehicle.get_all_vehicle_models(include_missing_vehicles)
+	local all_vehicles = vehicle.get_data_for_all_vehicles(include_missing_vehicles)
+	if all_vehicles == nil then return end
+
+	local result_table = {}
+	for key, value in ipairs(all_vehicles) do
+		result_table[#result_table+1] = value.Name
+	end
+
+	return result_table
 end

@@ -1,6 +1,9 @@
 -- This file is loaded first
 
+json = require("thirdparty.includes.json")
+
 require("includes.extentions.math")
+require("includes.extentions.string")
 
 require("includes.common")
 require("includes.ffi_init")

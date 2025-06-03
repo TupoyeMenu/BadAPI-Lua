@@ -47,7 +47,8 @@ ffi.metatype("fvector3", {
 
 local address
 if menu_exports.is_enhanced() then
-	address = nil -- TODO
+	-- multiple results, but all point to the same function
+	address = ffi.cast("void* (*)(void* _this, enum eHandlingType handling_type)", rip(menu_exports.scan_pattern("BA 08 00 00 00 E8 ? ? ? ? F6 40 ? 80 74 56", "") + 6))
 else
 	address = ffi.cast("void* (*)(void* _this, enum eHandlingType handling_type)", rip(menu_exports.scan_pattern("BA 08 00 00 00 E8 ? ? ? ? F7 40 ? ? 00 80 00 74 6F", "") + 6))
 end
@@ -58,3 +59,4 @@ ffi.metatype("struct CHandlingData", {
 		end
 	}
 })
+

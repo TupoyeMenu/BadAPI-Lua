@@ -35,6 +35,8 @@ ffi.cdef[[
 	uint32_t literal_joaat(const char* str);
 	void* get_tls_context();
 	bool script_can_tick();
+	uint32_t get_screen_resolution_x();
+	uint32_t get_screen_resolution_y();
 
 #pragma pack(push, 8)
 	typedef struct
