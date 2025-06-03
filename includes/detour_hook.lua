@@ -20,7 +20,7 @@ detour_hook = {
 ---@param target ffi.cdata* Addres of the function to hook.
 ---@param detour ffi.cdata* Your callback function.
 function detour_hook:new(name, target, detour)
-	if type(name) ~= "string" then print_stacktrace("bad argument 'name' for 'detour_hook:new'.\nExpected string got " .. type(name) .. "\nIn:") return end
+	if not isstring(name) then print_stacktrace("bad argument 'name' for 'detour_hook:new'.\nExpected string got " .. type(name) .. "\nIn:") return end
 	if type(target) ~= "cdata" then print_stacktrace("bad argument 'name' for 'detour_hook:new'.\nExpected cdata got " .. type(target) .. "\nIn:") return end
 	if type(detour) ~= "cdata" then print_stacktrace("bad argument 'name' for 'detour_hook:new'.\nExpected cdata got " .. type(detour) .. "\nIn:") return end
 
@@ -136,7 +136,7 @@ function detour_hook.register_by_pattern(name, pattern, module, function_declara
 		detour:__gc()
 	end
 
-	local address = menu_exports.ffi_scan_pattern(pattern, module)
+	local address = menu_exports.scan_pattern(pattern, module)
 
 	detour = detour_hook:new(name, address, ffi.cast(function_declaration, callback))
 	if detour == nil then return nil, nil end

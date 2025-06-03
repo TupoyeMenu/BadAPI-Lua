@@ -1,5 +1,38 @@
 local ffi = require("ffi")
 
+---Converts the input into a bool.
+---@param input any
+---@return boolean
+function tobool(input)
+	if input == false or input == nil or input == 0 or input == "0" or input == "false" then
+		return false
+	end
+	return true
+end
+
+function isbool(input)
+	return type(input) == "boolean"
+end
+function isnumber(input)
+	return type(input) == "number"
+end
+function isstring(input)
+	return type(input) == "string"
+end
+function istable(input)
+	return type(input) == "table"
+end
+function isfunction(input)
+	return type(input) == "function"
+end
+function isvector(input)
+	if type(input.x) == "number" and type(input.y) == "number" and type(input.z) == "number" then
+		return true
+	end
+	return false
+end
+
+
 ---Prints the stacktrace
 ---@param error_before_stacktrace string|nil Placed before the actual stacktrace
 function print_stacktrace(error_before_stacktrace)
@@ -39,8 +72,8 @@ function print_table(table_to_print, depth)
 		else
 			print(
 				tab_string,
-				type(key) == "string"  and '["' .. key .. '"]' or '[' .. tostring(key) .. ']',
-				type(value) == "string"  and '= "' .. value .. '",' or '= ' .. tostring(value) .. ','
+				isstring(key) and '["' .. key .. '"]' or '[' .. tostring(key) .. ']',
+				isstring(value) and '= "' .. value .. '",' or '= ' .. tostring(value) .. ','
 			)
 		end
 	end
@@ -60,12 +93,12 @@ function log_table(table_to_print, depth)
 
 	log.info(tab_string .. "{")
 	for key, value in pairs(table_to_print) do
-		if type(value) == "table" then
+		if istable(value) then
 			log.info(tab_string .. "	" .. tostring(key) .. ' =')
 			print_table(value, depth and depth + 1 or 1)
 		else
-			local key_string = type(key) == "string"  and '["' .. key .. '"]' or '[' .. tostring(key) .. ']'
-			local value_string = type(value) == "string"  and '"' .. value .. '",' or tostring(value) .. ','
+			local key_string = isstring(key)  and '["' .. key .. '"]' or '[' .. tostring(key) .. ']'
+			local value_string = isstring(value)  and '"' .. value .. '",' or tostring(value) .. ','
 			log.info(
 				tab_string
 				.. "	"

@@ -4,8 +4,8 @@ hook = {}
 local hooks_table = {}
 
 function hook.add(event, identifier, func)
-	if event == nil or type(event) ~= "string" then print_stacktrace("bad argument 'event' for 'hook.add'. In:") end
-	if identifier == nil or type(identifier) ~= "string" then print_stacktrace("bad argument 'identifier' for 'hook.add'. In:") end
+	if event == nil or not isstring(event) then print_stacktrace("bad argument 'event' for 'hook.add'. In:") end
+	if identifier == nil or not isstring(identifier) then print_stacktrace("bad argument 'identifier' for 'hook.add'. In:") end
 
 	if not hooks_table[event] then
 		hooks_table[event] = {}
@@ -15,8 +15,8 @@ function hook.add(event, identifier, func)
 end
 
 function hook.remove(event, identifier)
-	if type(event) ~= "string" then print_stacktrace("bad argument 'event' for 'hook.remove'.\nExpected string got " .. type(event) .. "\nIn:") return end
-	if type(identifier) ~= "string" then print_stacktrace("bad argument 'identifier' for 'hook.remove'.\nExpected string got " .. type(identifier) .. "\nIn:") return end
+	if not isstring(event) then print_stacktrace("bad argument 'event' for 'hook.remove'.\nExpected string got " .. type(event) .. "\nIn:") return end
+	if not isstring(identifier) then print_stacktrace("bad argument 'identifier' for 'hook.remove'.\nExpected string got " .. type(identifier) .. "\nIn:") return end
 
 	if table[event] then
 		table[event][identifier] = nil
@@ -24,7 +24,7 @@ function hook.remove(event, identifier)
 end
 
 function hook.call(event, ...)
-	if type(event) ~= "string" then print_stacktrace("bad argument 'event' for 'hook.call'.\nExpected string got " .. type(event) .. "\nIn:") return end
+	if not isstring(event) then print_stacktrace("bad argument 'event' for 'hook.call'.\nExpected string got " .. type(event) .. "\nIn:") return end
 
 	local table_of_this_event = hooks_table[event]
 	if table_of_this_event == nil then return end

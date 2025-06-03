@@ -1,0 +1,179 @@
+local type = type
+local string_gmatch = string.gmatch
+local log_info = log.info
+local log_warning = log.warning
+local tostring = tostring
+
+command = {}
+convar = {}
+
+local commands = {}
+
+local default_convar_flags =
+{
+	ARCHIVE = false,
+	LOCAL_ONLY = true,
+	SP_ONLY = false,
+	MP_ONLY = false
+}
+
+---@class command_flags
+---@field ARCHIVE? boolean Should save the value
+---@field LOCAL_ONLY? boolean Only the local player can run this command
+---@field SP_ONLY? boolean This command can only be used in SP
+---@field MP_ONLY? boolean This command can only be used in MP
+
+---@param name string
+---@param callback function Arguments are: (player_id, args)
+---@param complition_callback function|nil
+---@param help_text string|nil
+---@param flags command_flags|nil
+---@return table|nil command
+function command.add(name, callback, complition_callback, help_text, flags)
+	if not isstring(name) then print_stacktrace("bad argument 'name' for 'command.add'.\nExpected string got " .. type(name) .. "\nIn:") return end
+	if not isfunction(callback) then print_stacktrace("bad argument 'callback' for 'command.add'.\nExpected function got " .. type(callback) .. "\nIn:") return end
+	if complition_callback ~= nil and not not isfunction(complition_callback) then print_stacktrace("bad argument 'complition_callback' for 'command.add'.\nExpected function got " .. type(complition_callback) .. "\nIn:") return end
+	if help_text ~= nil and not isstring(help_text) then print_stacktrace("bad argument 'help_text' for 'command.add'.\nExpected string got " .. type(help_text) .. "\nIn:") return end
+	if flags ~= nil and not istable(flags) then print_stacktrace("bad argument 'flags' for 'command.add'.\nExpected table got " .. type(flags) .. "\nIn:") return end
+
+	if flags == nil then
+		flags = {}
+	end
+
+	commands[name] = {
+		callback = callback,
+		complition_callback = complition_callback,
+		help_text = help_text,
+		flags = flags
+	}
+
+	return commands[name]
+end
+
+local last_save_time = 0
+local function save_convars()
+	local cvar_file = ""
+	for key, value in pairs(commands) do
+		if value.flags.ARCHIVE then
+			cvar_file = cvar_file .. key .. " \"" .. value.value .. "\"\n"
+		end
+	end
+
+	local cfg_file = io.open("convars.cfg", "w")
+	if cfg_file then
+		cfg_file:write(cvar_file)
+		last_save_time = os.time()
+		cfg_file:close()
+	end
+end
+
+local function load_config(filename)
+	local cfg_file = io.open(filename, "r")
+	if cfg_file == nil then return end
+
+	for line in cfg_file:lines() do
+		command.call(self.get_id(), line)
+	end
+
+	cfg_file:close()
+end
+
+event.register_handler(menu_event.LuaInitFinished, "LoadCommands", function()
+	load_config("convars.cfg")
+end)
+
+local function convar_callback(player_id, args)
+	local convar_name = args[1]
+
+	if args[2] == nil then
+		log_info(tostring(commands[convar_name].value))
+		return
+	end
+
+	commands[convar_name].value = args[2]
+
+	-- Don't save if we have already saved in the last 10 seconds
+	if os.time() - last_save_time > 10 then
+		save_convars()
+	end
+end
+
+---@param name string
+---@return table|nil convar
+function convar.add(name, default_value, help_text, flags)
+	if not isstring(name) then print_stacktrace("bad argument 'name' for 'convar.add'.\nExpected string got " .. type(name) .. "\nIn:") return end
+	if not isstring(default_value) then print_stacktrace("bad argument 'default_value' for 'convar.add'.\nExpected string got " .. type(default_value) .. "\nIn:") return end
+	if help_text ~= nil and not isstring(help_text) then print_stacktrace("bad argument 'help_text' for 'convar.add'.\nExpected string got " .. type(help_text) .. "\nIn:") return end
+	if flags ~= nil and not istable(flags) then print_stacktrace("bad argument 'flags' for 'convar.add'.\nExpected table got " .. type(flags) .. "\nIn:") return end
+
+	if flags == nil then
+		flags = default_convar_flags
+	end
+
+	commands[name] = {
+		callback = convar_callback,
+		help_text = help_text,
+		flags = flags,
+		value = default_value
+	}
+
+	return commands[name]
+end
+
+
+---Turns command_string to command table
+---@param command_string string
+---@return table command_args
+function command.parse(command_string)
+	-- Pasted from: https://stackoverflow.com/a/28664691
+	local args = {}
+	local spat, epat = [=[^(['"])]=], [=[(['"])$]=]
+	local buf, quoted
+	for str in string_gmatch(command_string,"%S+") do
+		local squoted = str:match(spat)
+		local equoted = str:match(epat)
+		local escaped = str:match([=[(\*)['"]$]=])
+		if squoted and not quoted and not equoted then
+			buf, quoted = str, squoted
+		elseif buf and equoted == quoted and #escaped % 2 == 0 then
+			str, buf, quoted = buf .. ' ' .. str, nil, nil
+		elseif buf then
+			buf = buf .. ' ' .. str
+		end
+		if not buf then
+			args[#args+1] = str:gsub(spat, ""):gsub(epat, "")
+		end
+	end
+	if buf then
+		log_warning("Missing matching quote for "..buf)
+	end
+
+	return args
+end
+
+---@param player_id number Player that called this command
+---@param cmd string The command as a string
+---@return boolean success
+function command.call(player_id, cmd)
+	if not isnumber(player_id) then print_stacktrace("bad argument 'player_id' for 'command.call'.\nExpected number got " .. type(player_id) .. "\nIn:") return false end
+	if not isstring(cmd) then print_stacktrace("bad argument 'command' for 'command.call'.\nExpected string got " .. type(cmd) .. "\nIn:") return false end
+
+	log_info("> " .. cmd)
+
+	local args = command.parse(cmd)
+	local name = args[1]
+	if name then
+		if commands[name] then
+			commands[name].callback(player_id, args)
+			return true
+		end
+		log_warning("Command: " .. tostring(name) .. " not found")
+	end
+	return false
+end
+
+
+function command.get_table()
+	return commands
+end
+
