@@ -36,6 +36,18 @@ command.add("help", function(player_id, args)
 	end
 end)
 
+command.add("alias", function(player_id, args)
+	local alias_name = args[2]
+	local aliesed_command = args[3]
+	if alias_name and aliesed_command then
+		command.add(alias_name, function (player_id, _)
+			command.call(player_id, aliesed_command, true)
+		end)
+	else
+		log.warning("Usage: alias <alias_name> <command>")
+	end
+end)
+
 local messages = log.get_log_messages()
 command.add("dump_log_info", function(player_id, args)
 	log.info(tostring(#messages))

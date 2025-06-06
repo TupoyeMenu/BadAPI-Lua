@@ -80,6 +80,7 @@ end
 
 event.register_handler(menu_event.LuaInitFinished, "LoadCommands", function()
 	load_config("convars.cfg")
+	load_config("autoexec.cfg")
 end)
 
 local function convar_callback(player_id, args)
@@ -158,12 +159,15 @@ end
 
 ---@param player_id number Player that called this command
 ---@param cmd string The command as a string
+---@param hide_input? boolean Don't show that we ran the command in the console
 ---@return boolean success
-function command.call(player_id, cmd)
+function command.call(player_id, cmd, hide_input)
 	if not isnumber(player_id) then print_stacktrace("bad argument 'player_id' for 'command.call'.\nExpected number got " .. type(player_id) .. "\nIn:") return false end
 	if not isstring(cmd) then print_stacktrace("bad argument 'command' for 'command.call'.\nExpected string got " .. type(cmd) .. "\nIn:") return false end
 
-	log_info("> " .. cmd)
+	if not hide_input then
+		log_info("> " .. cmd)
+	end
 
 	local args = command.parse(cmd, true)
 	local name = args[1]

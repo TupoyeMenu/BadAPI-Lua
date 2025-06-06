@@ -67,7 +67,7 @@ function print_table(table_to_print, depth)
 	print(tab_string .. "{")
 	for key, value in pairs(table_to_print) do
 		if type(value) == "table" then
-			print(tab_string, tostring(key) .. ' =')
+			print(tab_string, "[" .. tostring(key) .. '] =')
 			print_table(value, depth and depth + 1 or 1)
 		else
 			print(
@@ -94,8 +94,8 @@ function log_table(table_to_print, depth)
 	log.info(tab_string .. "{")
 	for key, value in pairs(table_to_print) do
 		if istable(value) then
-			log.info(tab_string .. "	" .. tostring(key) .. ' =')
-			print_table(value, depth and depth + 1 or 1)
+			log.info(tab_string .. "	[" .. tostring(key) .. '] =')
+			log_table(value, depth and depth + 1 or 1)
 		else
 			local key_string = isstring(key)  and '["' .. key .. '"]' or '[' .. tostring(key) .. ']'
 			local value_string = isstring(value)  and '"' .. value .. '",' or tostring(value) .. ','

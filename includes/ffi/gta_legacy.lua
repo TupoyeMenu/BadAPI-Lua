@@ -882,4 +882,43 @@ struct GtaThread
  char m_padding7[0x0F];
 };
 
+
+enum eInputMethod
+{
+ INPUT_KEYBOARD = 0,
+ INPUT_KEYBOARD_UNK = 22,
+ INPUT_MOUSE = 3,
+ INPUT_MOUSE_ONE_AXIS = 1,
+ INPUT_MOUSE_ONE_AXIS_AND_SIDE = 4,
+ INPUT_MOUSE_ONE_AXIS_UNK = 5,
+ INPUT_MOUSE_SCROLLWHEEL = 6,
+ INPUT_MOUSE_BUTTON = 7,
+ INPUT_GAMEPAD_BUTTON = 9,
+ INPUT_GAMEPAD_TRIGGER = 11,
+ INPUT_GAMEPAD_STICK = 11,
+};
+
+struct CInput
+{
+ enum eInputMethod m_InputMethod;
+ int32_t m_Key;
+ int32_t m_Unk;
+};
+
+struct CControlAction
+{
+ float m_Unk;
+ float m_Value;
+ float m_Value2;
+ float m_Unk2;
+ struct CInput m_Input;
+ struct CInput m_Input2;
+ uint32_t N00000054;
+ uint32_t N00000087;
+ uint32_t N00000055;
+ uint32_t N0000008A;
+ uint8_t N00000056;
+ char pad_0039[15];
+};
+
 ]]

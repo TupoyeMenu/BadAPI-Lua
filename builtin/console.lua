@@ -17,6 +17,7 @@ local function get_suggestions(text, missing_only)
 	local command_table = command.get_table()
 	local args = command.parse(text, false)
 	local results = {}
+	local has_complitions = false
 
 	if #args == 1 then
 		for key, value in pairs(command_table) do
@@ -25,15 +26,15 @@ local function get_suggestions(text, missing_only)
 			end
 		end
 	elseif #args > 1 then
-		results[1] = args[1]
 		local command = command_table[args[1]]
-		if command.complition_callback then
+		if command and command.complition_callback then
 			results = command.complition_callback(args)
+			has_complitions = true
 		end
 	end
 
 	-- Display history
-	if #results == 0 and args[2] == nil then
+	if #results == 0 and #args < 2 then
 		results = command_history
 	end
 
@@ -68,7 +69,7 @@ local function draw_suggestions()
 		return
 	end
 	]]
-	local suggestions = get_suggestions(command_buffer, true)
+	local suggestions = get_suggestions(command_buffer)
 	for key, value in ipairs(suggestions) do
 		ImGui.Selectable(value, false)
 	end
@@ -113,6 +114,8 @@ end
 local keyup = 515
 local keydown = 516
 local keytab = 512
+
+---@param data ImGuiInputTextCallbackData
 local function callback_func(data)
 	if data.EventKey == keyup and #command_history and history_index > 1 then
 		history_index = history_index - 1
@@ -125,13 +128,15 @@ local function callback_func(data)
 		data:InsertChars(0, command_history[history_index])
 	end
 
-	if data.EventKey == keytab then
+	if data.EventKey == keytab and data.Buf then
 		local suggestions = get_suggestions(data.Buf, true)
 		if #suggestions == 1 then
 			data:InsertChars(data.BufTextLen, suggestions[1])
 		end
 	end
+	return 0
 end
+
 
 event.register_handler(menu_event.Draw, "Console", function()
 	if not console_open then return end
@@ -194,7 +199,7 @@ event.register_handler(menu_event.Draw, "Console", function()
 		local result
 		command_buffer, result = ImGui.InputTextWithHint("##ConsoleInput", "Command", command_buffer, 128, bit.bor(ImGuiInputTextFlags.EnterReturnsTrue, ImGuiInputTextFlags.CallbackHistory, ImGuiInputTextFlags.CallbackCompletion), callback_func)
 		if(result) then
-			command.call(0, command_buffer)
+			command.call(self.get_id(), command_buffer)
 			if #command_buffer > 0 then -- Don't insert empty strings to history
 				add_to_history(command_buffer)
 			end
@@ -220,11 +225,11 @@ end)
 
 event.register_handler(menu_event.Wndproc, "ConoleHotkey", function (hwnd, msg, wparam, lparam)
 	-- Opening is handled in ConsoleInputLock unless we can't tick yet
-	if(not menu_exports.script_can_tick() and msg == 0x0101 and wparam == 0xC0) then
+	if(not menu_exports.script_can_tick() and msg == WM_KEYUP and wparam == VK_OEM_3) then
 		toggle_console()
 	end
 
-	if console_open and msg == 0x0101 and wparam == 0x1B then -- Close with ESC
+	if console_open and msg == WM_KEYUP and wparam == VK_ESCAPE then -- Close with ESC
 		toggle_console()
 	end
 end)

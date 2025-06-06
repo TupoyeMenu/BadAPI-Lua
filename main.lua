@@ -1,73 +1,44 @@
+--Not actually a main file, actually it's more of a test file.
+
+
 --[[
-local lines = {}
-local num_messages
+local ffi = require("ffi")
 
-local function get_line_at_idx(idx)
-	local msg = lines[idx+1][1]
-	return msg
-end
-local function get_num_lines()
-	return #lines
-end
+local action = 0
+event.register_handler(menu_event.Draw, "main", function ()
+	if not gui.is_open() then return end
 
-
-local text_select = text_select:new(get_line_at_idx, get_num_lines, false)
-
-local function set_color_from_level(level)
-	if level == 0 then -- VERBOSE
-		ImGui.PushStyleColor(ImGuiCol.Text, 0.72, 0.72, 1.0, 1.0)
-	elseif level == 1 then -- INFO
-		ImGui.PushStyleColor(ImGuiCol.Text, 1, 1.0, 1.0, 1.0)
-	elseif level == 2 then -- WARNING
-		ImGui.PushStyleColor(ImGuiCol.Text, 1, 0.56, 0.0, 1.0)
-	elseif level == 3 then -- FATAL
-		ImGui.PushStyleColor(ImGuiCol.Text, 1, 0.0, 0.0, 1.0)
-	end
-end
-
-event.register_handler(menu_event.Draw, "ConsoleTest", function()
-	if(ImGui.Begin("Console2", ImGuiWindowFlags.NoScrollbar)) then
-		local messages = log.get_log_messages()
-		if num_messages ~= #messages then
-			num_messages = #messages
-			for i = 0, #lines do
-				lines[i] = nil
-			end
-			for index, value in ipairs(messages) do
-				local msg = value:Message()
-				for line in msg:gmatch("([^\n]*)\n?") do
-					lines[#lines+1] = {line, value:Level()}
-				end
-				lines[#lines] = nil
-			end
+	if ImGui.Begin("test") then
+		action, _ = ImGui.InputInt("action", action)
+		local action_ptr = control.action_to_ptr(action)
+		if action_ptr ~= nil then
+			ImGui.Text("m_unk = " .. tostring(action_ptr.m_Unk))
+			ImGui.Text("m_Value = " .. tostring(action_ptr.m_Value))
+			ImGui.Text("m_Value2 = " .. tostring(action_ptr.m_Value2))
+			ImGui.Text("m_unk2 = " .. tostring(action_ptr.m_Unk2))
+			ImGui.Text("m_InputMethod = " .. tostring(action_ptr.m_Input.m_InputMethod))
+			ImGui.Text("m_Key = " .. tostring(action_ptr.m_Input.m_Key))
+			ImGui.Text("N00000054 = " .. tostring(action_ptr.N00000054))
+			ImGui.Text("N00000087 = " .. tostring(action_ptr.N00000087))
+			ImGui.Text("N0000008A = " .. tostring(action_ptr.N0000008A))
+			ImGui.Text("N00000056 = " .. tostring(action_ptr.N00000056))
+		else
+			ImGui.Text("action_ptr == nil")
 		end
 
-		ImGui.BeginChild("##logs", 0, 0, 0, ImGuiWindowFlags.NoMove)
-		for index, value in ipairs(lines) do
+		ImGui.Separator()
 
-			set_color_from_level(value[2])
-			ImGui.Text(value[1])
-			ImGui.PopStyleColor()
+		local input_ptr = control.get_input_from_action(action)
+		if input_ptr ~= nil then
+			ImGui.Text("m_InputMethod: " .. tostring(input_ptr.m_InputMethod))
+			ImGui.Text("m_Key: " .. tostring(input_ptr.m_Key))
+			ImGui.Text("m_Unk: " .. tostring(input_ptr.m_Unk))
+		else
+			ImGui.Text("input_ptr == nil")
 		end
 
-		text_select:update()
-		if ImGui.BeginPopupContextWindow() then
-			ImGui.BeginDisabled(not text_select:hasSelection())
-			if ImGui.MenuItem("Copy", "Ctrl+C") then
-				text_select:copy()
-			end
-			ImGui.EndDisabled()
-
-			if ImGui.MenuItem("Select all", "Ctrl+A") then
-				text_select:selectAll()
-			end
-
-			ImGui.EndPopup()
-		end
-
-		ImGui.EndChild()
 	end
 	ImGui.End()
 end)
 
---]]
+]]
