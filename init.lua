@@ -15,7 +15,7 @@ require("includes.enums.pad")
 
 -- ~~Actual modules~~
 -- Not anymore
-require("includes.bytebatch")
+require("includes.bytepatch")
 require("includes.command")
 require("includes.entity")
 require("includes.vehicle")

@@ -11,7 +11,7 @@ local patches = {}
 ---@param address integer|ffi.cdata*
 ---@param bytes table Table of bytes. Ex: `{0x90, 0x90}`
 function bytepatch.add(name, address, bytes)
-	if not istable(bytes) ~= "table" then print_stacktrace("bad argument 'bytes' for 'bytepatch.add'.\nExpected table got " .. type(bytes) .. "\nIn:") return end
+	if not istable(bytes) then print_stacktrace("bad argument 'bytes' for 'bytepatch.add'.\nExpected table got " .. type(bytes) .. "\nIn:") return end
 
 	-- Revert the old patch
 	bytepatch.remove(name)
