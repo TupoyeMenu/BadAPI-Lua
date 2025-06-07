@@ -6,8 +6,8 @@ local VEHICLE = VEHICLE
 vehicle = {}
 spawned_vehicles = {}
 
----@param veh number vehicle index
----@param is_stolen boolean
+---@param veh number Vehicle to set for.
+---@param is_stolen boolean Should set vehicle as stolen.
 function vehicle.set_mp_bitset(veh, is_stolen)
 	DECORATOR.DECOR_SET_INT(veh, "MPBitset", 0)
 	local net_id = NETWORK.VEH_TO_NET(veh)
