@@ -111,31 +111,21 @@ MOD_LIGHTBAR = 49
 ---@param performance_only boolean
 function vehicle.upgrade(veh, performance_only)
 	VEHICLE.SET_VEHICLE_MOD_KIT(veh, 0)
-	if performance_only then
-		local perfomance_mods = {MOD_ENGINE, MOD_BRAKES, MOD_TRANSMISSION, MOD_SUSPENSION, MOD_ARMOR, MOD_NITROUS, MOD_TURBO}
-
-		for _, mod_slot in ipairs(perfomance_mods) do
-			if mod_slot ~= MOD_NITROUS and mod_slot ~= MOD_TURBO then
-				VEHICLE.SET_VEHICLE_MOD(veh, mod_slot, VEHICLE.GET_NUM_VEHICLE_MODS(veh, mod_slot) - 1, true)
-			else
-				VEHICLE.TOGGLE_VEHICLE_MOD(veh, mod_slot, true)
-			end
-		end
-	else
+	if not performance_only then
 		VEHICLE.TOGGLE_VEHICLE_MOD(veh, MOD_TURBO, true);
 		VEHICLE.TOGGLE_VEHICLE_MOD(veh, MOD_TYRE_SMOKE, true);
 		VEHICLE.TOGGLE_VEHICLE_MOD(veh, MOD_XENON_LIGHTS, true);
 		VEHICLE.SET_VEHICLE_WINDOW_TINT(veh, 1);
 		VEHICLE.SET_VEHICLE_TYRES_CAN_BURST(veh, false);
 
-		for slot = MOD_SPOILERS, MOD_LIGHTBAR, MOD_SPOILERS do
+		for slot = MOD_SPOILERS, MOD_LIGHTBAR do
 			if slot == MOD_LIVERY then
 				goto continue
 			end
 			local count = VEHICLE.GET_NUM_VEHICLE_MODS(veh, slot)
 			if count > 0 then
 				local selected_mod = -1
-				for mod = count-1, -1, count-1 do
+				for mod = count-1, -1, -1 do
 					if VEHICLE.IS_VEHICLE_MOD_GEN9_EXCLUSIVE(veh, slot, mod) and not menu_exports.is_enhanced() then
 						goto continue
 					end
@@ -151,13 +141,22 @@ function vehicle.upgrade(veh, performance_only)
 			::continue::
 		end
 	end
+
+	local perfomance_mods = {MOD_ENGINE, MOD_BRAKES, MOD_TRANSMISSION, MOD_SUSPENSION, MOD_ARMOR, MOD_NITROUS, MOD_TURBO}
+	for _, mod_slot in ipairs(perfomance_mods) do
+		if mod_slot ~= MOD_NITROUS and mod_slot ~= MOD_TURBO then
+			VEHICLE.SET_VEHICLE_MOD(veh, mod_slot, VEHICLE.GET_NUM_VEHICLE_MODS(veh, mod_slot) - 1, true)
+		else
+			VEHICLE.TOGGLE_VEHICLE_MOD(veh, mod_slot, true)
+		end
+	end
 end
 
 ---Removes all upgrades from the vehicle
 ---@param veh number
 function vehicle.downgrade(veh)
 	VEHICLE.SET_VEHICLE_MOD_KIT(veh, 0);
-	for i = 0, 50, 0 do
+	for i = 0, 50, 1 do
 		VEHICLE.REMOVE_VEHICLE_MOD(veh, i)
 	end
 end
