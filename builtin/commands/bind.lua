@@ -30,16 +30,16 @@ key_name_to_wndproc =
 	["escape"] = VK_ESCAPE,
 	["tab"] = VK_TAB,
 	["capslock"] = VK_CAPITAL,
-	["shift"] = VK_LSHIFT,
-	["rshift"] = VK_RSHIFT,
-	["ctrl"] = VK_LCONTROL,
-	["rctrl"] = VK_RCONTROL,
-	["alt"] = VK_LMENU,
-	["ralt"] = VK_RMENU,
+	["shift"] = VK_SHIFT,
+	["rshift"] = VK_SHIFT,
+	["ctrl"] = VK_CONTROL,
+	["rctrl"] = VK_CONTROL,
+	["alt"] = VK_MENU,
+	["ralt"] = VK_MENU,
 	["space"] = VK_SPACE,
 	["backspace"] = VK_BACK,
 	["enter"] = VK_RETURN,
-	["semicolon"] = VK_OEM_1, -- Is this correct?
+	["semicolon"] = VK_OEM_1,
 	["lwin"] = VK_LWIN,
 	["rwin"] = VK_RWIN,
 	["apps"] = 0, -- What the hell are you?
@@ -58,6 +58,7 @@ key_name_to_wndproc =
 	["end"] = VK_END,
 	["pause"] = VK_PAUSE,
 
+	--FIXME Almost everything here is completely wrong, we can't get these keys through wndproc.
 	["kp_end"] = VK_NUMPAD1,
 	["kp_downarrow"] = VK_NUMPAD2,
 	["kp_pgdn"] = VK_NUMPAD3,
@@ -67,13 +68,13 @@ key_name_to_wndproc =
 	["kp_home"] = VK_NUMPAD7,
 	["kp_uparrow"] = VK_NUMPAD8,
 	["kp_pgup"] = VK_NUMPAD9,
-	["kp_enter"] = VK_PA1,
-	["kp_ins"] = VK_NUMPAD0,
+	["kp_enter"] = VK_RETURN,
+	["kp_ins"] = VK_INSERT,
 	["kp_del"] = VK_OEM_PERIOD, -- Is there a VK_ for this?
-	["kp_slash"] = VK_OEM_2, -- Is there a VK_ for this?
-	["kp_multiply"] = 0, -- Is there a VK_ for this?
-	["kp_minus"] = VK_OEM_MINUS, -- Is there a VK_ for this?
-	["kp_plus"] = VK_OEM_PLUS, -- Is there a VK_ for this?
+	["kp_slash"] = VK_DIVIDE, -- Is there a VK_ for this?
+	["kp_multiply"] = VK_MULTIPLY, -- Is there a VK_ for this?
+	["kp_minus"] = VK_SUBTRACT, -- Is there a VK_ for this?
+	["kp_plus"] = VK_ADD, -- Is there a VK_ for this?
 
 	-- mwheeldown -- Need to handle this separatly
 	-- mwheelup -- Need to handle this separatly
@@ -95,7 +96,7 @@ command.add("bind", function(player_id, args)
 		for key in key_name:gmatch('([^+]+)') do
 			local wndproc_key = key_name_to_wndproc[key]
 			if wndproc_key == nil and #key == 1 then
-				wndproc_keys[1] = string.byte(string.upper(key))
+				wndproc_keys[#wndproc_keys+1] = string.byte(string.upper(key))
 			else
 				wndproc_keys[#wndproc_keys+1] = wndproc_key
 			end
@@ -154,7 +155,7 @@ local function check_bind_keys(key_just_pressed, is_down)
 end
 
 event.register_handler(menu_event.Wndproc, "BindWndprocHook", function (hwnd, msg, wparam, lparam)
-	if msg == WM_KEYDOWN then
+	if msg == WM_KEYDOWN and not keys_down[wparam] then
 		keys_down[wparam] = true
 		check_bind_keys(wparam, true)
 	elseif msg == WM_KEYUP then
