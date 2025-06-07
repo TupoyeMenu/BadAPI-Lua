@@ -223,6 +223,16 @@ event.register_handler(menu_event.Draw, "Console", function()
 	ImGui.End()
 end)
 
+--The pause menu really hates anything that uses escape, block it for 10 frames after we closed
+local function block_pause_menu()
+	script.run_in_fiber(function (script)
+		for i = 1, 10, 1 do
+			PAD.DISABLE_CONTROL_ACTION(0, INPUT_FRONTEND_PAUSE, false)
+			PAD.DISABLE_CONTROL_ACTION(0, INPUT_FRONTEND_PAUSE_ALTERNATE, false)
+			script:yield()
+		end
+	end)
+end
 
 local console_hotkey = VK_OEM_3
 event.register_handler(menu_event.Wndproc, "ConoleHotkey", function (hwnd, msg, wparam, lparam)
@@ -232,6 +242,7 @@ event.register_handler(menu_event.Wndproc, "ConoleHotkey", function (hwnd, msg, 
 	end
 
 	if console_open and msg == WM_KEYDOWN and wparam == VK_ESCAPE then -- Close with ESC
+		block_pause_menu()
 		toggle_console()
 	end
 end)
