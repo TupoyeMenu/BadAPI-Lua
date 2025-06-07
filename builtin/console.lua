@@ -34,7 +34,7 @@ local function get_suggestions(text, missing_only)
 	end
 
 	-- Display history
-	if #results == 0 and #args < 2 then
+	if #results == 0 and #args == 0 then
 		results = command_history
 	end
 
