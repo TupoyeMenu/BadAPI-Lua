@@ -199,10 +199,10 @@ event.register_handler(menu_event.Draw, "Console", function()
 		local result
 		command_buffer, result = ImGui.InputTextWithHint("##ConsoleInput", "Command", command_buffer, 128, bit.bor(ImGuiInputTextFlags.EnterReturnsTrue, ImGuiInputTextFlags.CallbackHistory, ImGuiInputTextFlags.CallbackCompletion), callback_func)
 		if(result) then
-			command.call(self.get_id(), command_buffer)
 			if #command_buffer > 0 then -- Don't insert empty strings to history
 				add_to_history(command_buffer)
 			end
+			command.call(self.get_id(), command_buffer)
 			command_buffer = ""
 			should_set_focus = true
 		end
@@ -223,24 +223,31 @@ event.register_handler(menu_event.Draw, "Console", function()
 	ImGui.End()
 end)
 
+
+local console_hotkey = VK_OEM_3
 event.register_handler(menu_event.Wndproc, "ConoleHotkey", function (hwnd, msg, wparam, lparam)
 	-- Opening is handled in ConsoleInputLock unless we can't tick yet
-	if(not menu_exports.script_can_tick() and msg == WM_KEYUP and wparam == VK_OEM_3) then
+	if(msg == WM_KEYDOWN and wparam == console_hotkey) then
 		toggle_console()
 	end
 
-	if console_open and msg == WM_KEYUP and wparam == VK_ESCAPE then -- Close with ESC
+	if console_open and msg == WM_KEYDOWN and wparam == VK_ESCAPE then -- Close with ESC
 		toggle_console()
 	end
 end)
 
 script.register_looped("ConsoleInputLock", function (script)
-	PAD.DISABLE_CONTROL_ACTION(0, 243, false)
-	if PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, 243) then
-		toggle_console()
+	local actions = control.get_actions_using_this_key(console_hotkey)
+	for _, value in ipairs(actions) do
+		PAD.DISABLE_CONTROL_ACTION(0, value, false)
 	end
 
 	if console_open then
 		PAD.DISABLE_ALL_CONTROL_ACTIONS(0)
 	end
 end)
+
+command.add("clear_history", function (player_id, args)
+	command_history = {}
+	history_index = 0
+end, nil, "Clears the command history", {LOCAL_ONLY=true})

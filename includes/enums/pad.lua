@@ -1,6 +1,6 @@
 
 --#region Controls
---Source: https://docs.fivem.net/docs/game-references/controls/
+--Source: https://alexguirre.github.io/rage-parser-dumps/dump.html?build=3442&game=gta5#rage__InputType
 INPUT_NEXT_CAMERA = 0
 INPUT_LOOK_LR = 1
 INPUT_LOOK_UD = 2
@@ -362,4 +362,15 @@ INPUT_VEH_TRANSFORM = 357
 INPUT_QUAD_LOCO_REVERSE = 358
 INPUT_RESPAWN_FASTER = 359
 INPUT_HUDMARKER_SELECT = 360
+INPUT_EAT_SNACK = 361
+INPUT_USE_ARMOR = 362
+INPUT_VEH_SHIFT_GEAR_UP = 363
+INPUT_VEH_SHIFT_GEAR_DOWN = 364
+MAX_INPUTS = 365
+UNDEFINED_INPUT = -1
+DYNAMIC_MAPPING_MOUSE_X = -10
+DYNAMIC_MAPPING_MOUSE_Y = -20
+FIRST_INPUT = 0
+SCRIPTED_INPUT_FIRST = 218
+SCRIPTED_INPUT_LAST = 236
 --#endregion
