@@ -63,6 +63,7 @@ ffi.cdef[[
 	Vector3* get_return_value_vector3();
 	void* get_return_address();
 
+	void unload();
 ]]
 
 local menu_path = get_dll_path()

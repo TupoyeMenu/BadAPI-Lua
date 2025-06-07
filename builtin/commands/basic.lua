@@ -6,6 +6,12 @@ end)
 command.add("lua_run", function(player_id, args)
 	loadstring(args[2])()
 end)
+
+command.add("unload", function(player_id, args)
+	event.trigger(menu_event.MenuUnloaded)
+	menu_exports.unload()
+end)
+
 command.add("print", function(player_id, args)
 	local string_to_print = ""
 	for i = 2, #args do
