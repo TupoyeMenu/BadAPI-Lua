@@ -35,7 +35,7 @@ end
 ---@param props boolean Inlcude props
 ---@return table entity_array
 function entity.get_entities(vehicles, peds, props)
-	local result
+	local result = {}
 
 	if vehicles then
 		for _, value in ipairs(entities.get_all_vehicles_as_handles()) do
@@ -70,7 +70,9 @@ function entity.delete(entity_index)
 		end
 	end
 
-	ENTITY.DETACH_ENTITY(entity_index, false, false)
+	if ENTITY.IS_ENTITY_ATTACHED(entity_index) then
+		ENTITY.DETACH_ENTITY(entity_index, false, false)
+	end
 	ENTITY.SET_ENTITY_COORDS_NO_OFFSET(entity_index, 7000, 7000, 0, false, false, false)
 	if not ENTITY.IS_ENTITY_A_MISSION_ENTITY(entity_index) then
 		ENTITY.SET_ENTITY_AS_MISSION_ENTITY(entity_index, true, true)

@@ -171,13 +171,12 @@ command.add("kill", function(player_id, args)
 	end)
 end, nil, "Kills you instantly", {LOCAL_ONLY=true})
 
-command.add("black_screen", function(player_id, args)
+command.add("toggle_black_screen", function(player_id, args)
 	script.run_in_fiber(function()
-		CAM.DO_SCREEN_FADE_OUT(0)
+		if CAM.IS_SCREEN_FADED_OUT() then
+			CAM.DO_SCREEN_FADE_IN(0)
+		else
+			CAM.DO_SCREEN_FADE_OUT(0)
+		end
 	end)
-end, nil, "Blacks out your screen and stops the game from rendering the world")
-command.add("remove_black_screen", function(player_id, args)
-	script.run_in_fiber(function()
-		CAM.DO_SCREEN_FADE_IN(0)
-	end)
-end)
+end, nil, "Blacks out your screen and stops the game from rendering the world", {LOCAL_ONLY=true})
