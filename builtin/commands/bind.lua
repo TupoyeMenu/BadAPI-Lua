@@ -91,36 +91,74 @@ command.add("bind", function(player_id, args)
 	local key_name = args[2]
 	local command = args[3]
 	if key_name and command then
-		local wndproc_key = key_name_to_wndproc[key_name]
-		if wndproc_key == nil and #key_name == 1 then
-			wndproc_key = string.byte(string.upper(key_name))
+		local wndproc_keys = {}
+		for key in key_name:gmatch('([^+]+)') do
+			local wndproc_key = key_name_to_wndproc[key]
+			if wndproc_key == nil and #key == 1 then
+				wndproc_keys[1] = string.byte(string.upper(key))
+			else
+				wndproc_keys[#wndproc_keys+1] = wndproc_key
+			end
 		end
+
 		local up_command
 		if string.startswith(command, "+") then
 			up_command = "-" .. string.sub(command, 2)
 		end
-		bind_table[#bind_table+1] = {key=wndproc_key, down_command=command, up_command=up_command}
+		bind_table[#bind_table+1] = {keys=wndproc_keys, down_command=command, up_command=up_command}
 	else
 		log.warning("Usage: bind <key> <command>")
 	end
 end, nil, nil, {LOCAL_ONLY=true}) --TODO Add ARCHIVE
 
+command.add("unbindall", function (player_id, args)
+	bind_table = {}
+end, nil, "Removes all binds", {LOCAL_ONLY=true})
+
 function bind.get_table()
 	return bind_table
 end
 
+local keys_down = {}
+local function are_all_bind_keys_down(bind)
+	local failed = false
+	for _, key in ipairs(bind.keys) do
+		if not keys_down[key] then
+			failed = true
+			break
+		end
+	end
+	return not failed
+end
+
+local function is_key_in_bind(bind, key)
+	local found = false
+	for _, key_ in ipairs(bind.keys) do
+		if key_ == key then
+			return true
+		end
+	end
+	return false
+end
+
+local function check_bind_keys(key_just_pressed, is_down)
+	for _, bind in ipairs(bind_table) do
+		if are_all_bind_keys_down(bind) then
+			if is_down and bind.down_command then
+				command.call(self.get_id(), bind.down_command, true)
+			elseif not is_down and bind.up_command and is_key_in_bind(bind, key_just_pressed) then
+				command.call(self.get_id(), bind.up_command, true)
+			end
+		end
+	end
+end
+
 event.register_handler(menu_event.Wndproc, "BindWndprocHook", function (hwnd, msg, wparam, lparam)
 	if msg == WM_KEYDOWN then
-		for index, value in ipairs(bind_table) do
-			if value.key == wparam then
-				command.call(self.get_id(), value.down_command, true)
-			end
-		end
+		keys_down[wparam] = true
+		check_bind_keys(wparam, true)
 	elseif msg == WM_KEYUP then
-		for index, value in ipairs(bind_table) do
-			if value.key == wparam and value.up_command then
-				command.call(self.get_id(), value.up_command, true)
-			end
-		end
+		check_bind_keys(wparam, false)
+		keys_down[wparam] = false
 	end
 end)
