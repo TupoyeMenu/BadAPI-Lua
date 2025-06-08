@@ -53,3 +53,27 @@ vec3.__eq = function (a, b)
 		   a.y == b.y and
 		   a.z == b.z
 end
+
+vec3.cross_product = function (a,b)
+	return vec3:new(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x)
+end
+
+vec3.dot_product = function (a,b)
+	return a.x * b.x + a.y * b.y + a.z * b.z
+end
+
+vec3.length = function (a)
+	return math.sqrt(a.x * a.x + a.y * a.y + a.z * a.z)
+end
+
+vec3.normalize = function (a)
+	local len = a:length()
+	if len ~= 0 then
+		return a * (1/len)
+	end
+	return a
+end
+
+vec3.distance = function (a,b)
+	return (a - b):length()
+end

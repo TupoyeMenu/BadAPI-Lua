@@ -1,7 +1,13 @@
 local ffi = require("ffi")
 
 command.add("lua_openscript", function(player_id, args)
-	dofile(args[2])
+	local file, error = loadfile("BadAPI/scripts/" .. args[2])
+	if file then
+		file()
+		log.info("Loaded: " .. args[2])
+	else
+		log.warning(tostring(error))
+	end
 end)
 command.add("lua_run", function(player_id, args)
 	loadstring(args[2])()
