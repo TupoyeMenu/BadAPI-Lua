@@ -7,6 +7,8 @@ local tostring = tostring
 command = {}
 convar = {}
 
+local initial_config_loaded = false
+
 local commands = {}
 
 local default_convar_flags =
@@ -83,6 +85,8 @@ end
 event.register_handler(menu_event.LuaInitFinished, "LoadCommands", function()
 	load_config("convars.cfg")
 	load_config("autoexec.cfg")
+
+	initial_config_loaded = true
 end)
 
 local function convar_callback(player_id, args)
@@ -95,8 +99,8 @@ local function convar_callback(player_id, args)
 
 	commands[convar_name].value = args[2]
 
-	-- Don't save if we have already saved in the last 10 seconds
-	if os.time() - last_save_time > 10 then
+	-- Don't save if we have already saved in the last 5 seconds
+	if initial_config_loaded and os.time() - last_save_time > 5 then
 		save_convars()
 	end
 end
