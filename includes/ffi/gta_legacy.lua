@@ -7,37 +7,7 @@ ffi.cdef[[
 # 1 "/usr/include/stdc-predef.h" 1 3 4
 # 0 "<command-line>" 2
 # 1 "gta.c"
-# 10 "gta.c"
-typedef union
-{
- float data[4];
- struct
- {
-  float x, y, z, w;
- };
-} fvector4;
-
-typedef union
-{
- float data[4];
- struct
- {
-  float x, y, z, w;
- };
-} fvector3;
-
-typedef union
-{
- float data[4][4];
- struct
- {
-  struct
-  {
-   float x, y, z, w;
-  } rows[4];
- };
-} fmatrix44;
-
+# 9 "gta.c"
 #pragma pack(push, 8)
 typedef struct
 {
@@ -85,7 +55,18 @@ struct CNavigation
 };
 #pragma pack(pop)
 
-
+#pragma pack(push, 1)
+struct RAGE_RTTI
+{
+ void* (*_0x00)(void*_this);
+ void* (*_0x08)(void*_this);
+ uint32_t (*_0x10)(void*_this);
+ void* (*_0x18)(void*_this, void*);
+ bool (*_0x20)(void*_this, void*);
+ bool (*_0x28)(void*_this, void**);
+ void (*destructor)(void*_this);
+};
+#pragma pack(pop)
 
 #pragma pack(push, 1)
 struct fwExtensibleBase
@@ -919,6 +900,209 @@ struct CControlAction
  uint32_t N0000008A;
  uint8_t N00000056;
  char pad_0039[15];
+};
+
+struct Obf32
+{
+ uint32_t m_unk1;
+ uint32_t m_unk2;
+ uint32_t m_unk3;
+ uint32_t m_unk4;
+};
+
+#pragma pack(push, 8)
+struct CGameDataHash
+{
+ bool m_IsJapaneseVersion;
+ struct Obf32 m_Data[16];
+};
+#pragma pack(pop)
+
+struct datBitBuffer
+{
+ void* m_data;
+ uint32_t m_bitOffset;
+ uint32_t m_maxBit;
+ uint32_t m_bitsRead;
+ uint32_t m_curBit;
+ uint32_t m_highestBitsRead;
+ uint8_t m_flagBits;
+};
+
+struct netSocketAddress
+{
+ union {
+  uint32_t m_Packed;
+  struct
+  {
+   uint8_t m_Field4;
+   uint8_t m_Field3;
+   uint8_t m_Field2;
+   uint8_t m_Field1;
+  };
+ } m_IpAddress;
+ uint16_t m_Port;
+};
+
+
+struct netAddress
+{
+ struct netSocketAddress m_InternalIp;
+ struct netSocketAddress m_ExternalIp;
+ uint64_t m_PeerId;
+ char m_Pad[6];
+ uint8_t m_ConnectionType;
+};
+
+enum rlPlatforms
+{
+ UNK0,
+ XBOX,
+ PLAYSTATION,
+ PC,
+};
+
+struct rlGamerHandle
+{
+ int64_t m_RockstarId;
+ uint8_t m_Platform;
+ uint8_t m_ProfileIndex;
+};
+
+struct rlGamerInfoBase
+{
+ bool m_SecurityEnabled;
+ uint64_t m_PeerId;
+ struct rlGamerHandle m_GamerHandle;
+ char m_AESKey[0x28];
+ struct netAddress m_RelayAddress;
+ char m_RelaySignature[0x40];
+ struct netSocketAddress m_ExternalAddress;
+ struct netSocketAddress m_InternalAddress;
+ uint32_t m_NatType;
+ bool m_ForceRelays;
+};
+
+struct rlGamerInfo
+{
+ struct rlGamerInfoBase;
+ uint64_t m_HostToken;
+
+ union {
+  struct rlGamerHandle m_GamerHandle2;
+  uint32_t m_PeerId2;
+ };
+ uint32_t m_ROSPrivilege;
+ char m_name[17];
+};
+
+struct CBattlEyePlayerModifyContext
+{
+ atArray m_Ticket;
+ atArray m_GamerHandleHash;
+ struct netSocketAddress m_Address;
+ uint64_t m_HostToken;
+ char m_Name[17];
+ bool m_IsLocal;
+};
+
+#pragma pack(push, 8)
+struct netPlayerVtable
+{
+ struct RAGE_RTTI;
+ void (*Reset)(void*_this);
+ bool (*IsPhysical)(void*_this);
+ const char* (*GetName)(void*_this);
+ uint64_t (*GetHostToken)(void*_this);
+ void (*UpdatePermissions)(void*_this);
+ bool (*IsHost)(void*_this);
+ struct rlGamerInfo* (*GetGamerInfo)(void*_this);
+ void (*UpdateUnk)(void*_this);
+};
+
+struct netPlayer
+{
+ struct netPlayerVtable* vtable;
+ int m_AccountId;
+ int64_t m_RockstarId;
+
+
+
+ char new_0018[0x90];
+ uint32_t m_player_type;
+
+ struct CNonPhysicalPlayerData* m_NonPhysicalPlayer;
+ uint32_t m_MessageId;
+ char pad_001C[4];
+ uint8_t m_ActiveIndex;
+ uint8_t m_PlayerIndex;
+
+
+
+
+
+ char pad_0022[3];
+ uint16_t m_complaints;
+ char pad_0027[17];
+ struct CNetGamePlayer* m_unk_net_player_list[10];
+ char pad_0090[4];
+ uint64_t pad_0098;
+
+};
+#pragma pack(pop)
+
+struct CNetGamePlayer
+{
+ struct netPlayer;
+ void* m_Unk;
+ struct CPlayerInfo* m_PlayerInfo;
+};
+
+struct netPlayerMgrBase
+{
+ struct netPlayerMgrBaseVtable* vtable;
+ struct netConnectionManager* m_NetConnectionMgr;
+ void* m_BandwidthMgr;
+ char pad_0018[216];
+ struct CNetGamePlayer* m_LocalPlayer;
+ char pad_00F8[144];
+ struct CNetGamePlayer* m_Players[32];
+ uint32_t m_MaxPlayers;
+ char pad_028C[4];
+ int m_UnloadedPlayerCount;
+ int m_LoadedPlayerCount;
+ int m_LoadedNonLocalPlayerCount;
+ int m_PhysicalPlayerCount;
+ int m_LocalPhysicalPlayerCount;
+ int m_NonLocalPhysicalPlayerCount;
+ char pad_0296[1608];
+};
+
+struct CNetworkPlayerMgr
+{
+ struct netPlayerMgrBase;
+};
+
+struct netEvent
+{
+ void* vtable;
+ uint32_t m_Timestamp;
+ char pad_0008[52];
+ uint32_t m_MsgId;
+ uint32_t m_CxnId;
+ struct netEvent* m_This;
+ uint32_t m_PeerId;
+ char pad_0084[4];
+};
+
+
+struct netEventFrameReceived
+{
+ struct netEvent;
+ int m_SecurityId;
+ struct netAddress m_Address;
+ uint32_t m_Length;
+ void* m_Data;
 };
 
 ]]

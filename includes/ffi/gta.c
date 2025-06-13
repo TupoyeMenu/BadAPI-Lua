@@ -3,39 +3,8 @@
 #include <stdint.h>
 #include <unistd.h>
 #include "stdbool.h"
+#include "vectors.h"
 #endif
-
-
-
-typedef union
-{
-	float data[4];
-	struct
-	{
-		float x, y, z, w;
-	};
-} fvector4;
-
-typedef union
-{
-	float data[4];
-	struct
-	{
-		float x, y, z, w;
-	};
-} fvector3;
-
-typedef union
-{
-	float data[4][4];
-	struct
-	{
-		struct
-		{
-			float x, y, z, w;
-		} rows[4];
-	};
-} fmatrix44;
 
 #pragma pack(push, 8)
 typedef struct
@@ -84,7 +53,18 @@ struct CNavigation
 };
 #pragma pack(pop)
 
-
+#pragma pack(push, 1)
+struct RAGE_RTTI
+{
+	void* (*_0x00)(void*_this);
+	void* (*_0x08)(void*_this);
+	uint32_t (*_0x10)(void*_this);
+	void* (*_0x18)(void*_this, void*);
+	bool (*_0x20)(void*_this, void*);
+	bool (*_0x28)(void*_this, void**);
+	void (*destructor)(void*_this);
+};
+#pragma pack(pop)
 
 #pragma pack(push, 1)
 struct fwExtensibleBase
@@ -918,4 +898,207 @@ struct CControlAction
 	uint32_t N0000008A;
 	uint8_t N00000056;
 	char pad_0039[15]; //0x0039
+};
+
+struct Obf32
+{
+	uint32_t m_unk1;
+	uint32_t m_unk2;
+	uint32_t m_unk3;
+	uint32_t m_unk4;
+};
+
+#pragma pack(push, 8)
+struct CGameDataHash
+{
+	bool m_IsJapaneseVersion;
+	struct Obf32 m_Data[16];
+};
+#pragma pack(pop)
+
+struct datBitBuffer
+{
+	void* m_data;               //0x0000
+	uint32_t m_bitOffset;       //0x0008
+	uint32_t m_maxBit;          //0x000C
+	uint32_t m_bitsRead;        //0x0010
+	uint32_t m_curBit;          //0x0014
+	uint32_t m_highestBitsRead; //0x0018
+	uint8_t m_flagBits;         //0x001C
+};
+
+struct netSocketAddress
+{
+	union {
+		uint32_t m_Packed;
+		struct
+		{
+			uint8_t m_Field4;
+			uint8_t m_Field3;
+			uint8_t m_Field2;
+			uint8_t m_Field1;
+		};
+	} m_IpAddress;
+	uint16_t m_Port;
+};
+
+// TODO: verify for Enhanced
+struct netAddress
+{
+	struct netSocketAddress m_InternalIp;     // 0x00
+	struct netSocketAddress m_ExternalIp;     // 0x08
+	uint64_t m_PeerId;                 // 0x10 for peer relay cxns
+	char m_Pad[6];                     // 0x18 TODO: what is this? it's not a usual address (padding would exist otherwise)
+	uint8_t m_ConnectionType;          // 0x1E 1 = direct 2 = relay 3 = peer relays
+};
+
+enum rlPlatforms
+{
+	UNK0,
+	XBOX,
+	PLAYSTATION,
+	PC,
+};
+
+struct rlGamerHandle
+{
+	int64_t m_RockstarId;      // 0x00
+	uint8_t m_Platform;        // 0x08
+	uint8_t m_ProfileIndex;    // 0x09 (maybe, or some kind of discriminator)
+};
+
+struct rlGamerInfoBase
+{
+	bool m_SecurityEnabled;              // 0x00
+	uint64_t m_PeerId;                   // 0x08
+	struct rlGamerHandle m_GamerHandle;         // 0x10
+	char m_AESKey[0x28];                 // 0x20
+	struct netAddress m_RelayAddress;           // 0x48
+	char m_RelaySignature[0x40];         // 0x68
+	struct netSocketAddress m_ExternalAddress;  // 0xA8
+	struct netSocketAddress m_InternalAddress;  // 0xB0
+	uint32_t m_NatType;                  // 0xB8
+	bool m_ForceRelays;                  // 0xBC
+};
+
+struct rlGamerInfo
+{
+	struct rlGamerInfoBase;
+	uint64_t m_HostToken;      // 0xC0
+
+	union {
+		struct rlGamerHandle m_GamerHandle2;
+		uint32_t m_PeerId2; // not found in all instances (TODO I don't think it's found at all anymore)
+	};                         // 0xC8
+	uint32_t m_ROSPrivilege;   // 0xD8
+	char m_name[17];           // 0xDC
+};
+
+struct CBattlEyePlayerModifyContext
+{
+	atArray m_Ticket;
+	atArray m_GamerHandleHash;
+	struct netSocketAddress m_Address;
+	uint64_t m_HostToken;
+	char m_Name[17];
+	bool m_IsLocal;
+};
+
+#pragma pack(push, 8)
+struct netPlayerVtable
+{
+	struct RAGE_RTTI;
+	void (*Reset)(void*_this);
+	bool (*IsPhysical)(void*_this);
+	const char* (*GetName)(void*_this);
+	uint64_t (*GetHostToken)(void*_this);
+	void (*UpdatePermissions)(void*_this); // dev status, comm perms, etc.
+	bool (*IsHost)(void*_this);
+	struct rlGamerInfo* (*GetGamerInfo)(void*_this);
+	void (*UpdateUnk)(void*_this); // force updates a player ped data node
+};
+
+struct netPlayer
+{
+	struct netPlayerVtable* vtable;
+	int m_AccountId;      // -- added b3504
+	int64_t m_RockstarId; // -- added b3504
+#if ENHANCED
+	char pad_0018[0x38]; // voice chat stuff
+#else
+	char new_0018[0x90]; // -- added b3504
+	uint32_t m_player_type;
+#endif
+	struct CNonPhysicalPlayerData* m_NonPhysicalPlayer;
+	uint32_t m_MessageId;
+	char pad_001C[4];
+	uint8_t m_ActiveIndex;
+	uint8_t m_PlayerIndex;
+#if ENHANCED
+	char pad_0062[0x6E];
+	uint8_t m_Flags;
+	char pad_0091[0xF];
+#else
+	char pad_0022[3];
+	uint16_t m_complaints;
+	char pad_0027[17];
+	struct CNetGamePlayer* m_unk_net_player_list[10];
+	char pad_0090[4];
+	uint64_t pad_0098;
+#endif
+};
+#pragma pack(pop)
+
+struct CNetGamePlayer
+{
+	struct netPlayer;
+	void* m_Unk;
+	struct CPlayerInfo* m_PlayerInfo;
+};
+
+struct netPlayerMgrBase
+{
+	struct netPlayerMgrBaseVtable* vtable;
+	struct netConnectionManager* m_NetConnectionMgr;
+	void* m_BandwidthMgr;
+	char pad_0018[216];
+	struct CNetGamePlayer* m_LocalPlayer;
+	char pad_00F8[144];
+	struct CNetGamePlayer* m_Players[32];
+	uint32_t m_MaxPlayers;
+	char pad_028C[4];
+	int m_UnloadedPlayerCount; // seems like the inverse of the below thing
+	int m_LoadedPlayerCount;
+	int m_LoadedNonLocalPlayerCount;
+	int m_PhysicalPlayerCount;
+	int m_LocalPhysicalPlayerCount; // lol? should always be one
+	int m_NonLocalPhysicalPlayerCount;
+	char pad_0296[1608];
+};
+
+struct CNetworkPlayerMgr
+{
+	struct netPlayerMgrBase;
+};
+
+struct netEvent
+{
+	void* vtable;
+	uint32_t m_Timestamp;
+	char pad_0008[52];
+	uint32_t m_MsgId;
+	uint32_t m_CxnId;
+	struct netEvent* m_This;
+	uint32_t m_PeerId;
+	char pad_0084[4];
+};
+
+// or rage::netConnection::InFrame
+struct netEventFrameReceived
+{
+	struct netEvent;
+	int m_SecurityId;
+	struct netAddress m_Address;
+	uint32_t m_Length;
+	void* m_Data;
 };
