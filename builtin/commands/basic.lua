@@ -10,7 +10,16 @@ command.add("lua_openscript", function(player_id, args)
 	end
 end)
 command.add("lua_run", function(player_id, args)
-	loadstring(args[2])()
+	assert(loadstring(args[2]))()
+end)
+command.add("lua_eval", function(player_id, args)
+	local func, err = loadstring("return " .. args[2])
+	if func then
+		local res = func()
+		log.info(tostring(res))
+	elseif err then
+		log.fatal(err)
+	end
 end)
 
 command.add("unload", function(player_id, args)
