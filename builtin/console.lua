@@ -197,7 +197,7 @@ event.register_handler(menu_event.Draw, "Console", function()
 			ImGui.SetKeyboardFocusHere()
 		end
 		local result
-		command_buffer, result = ImGui.InputTextWithHint("##ConsoleInput", "Command", command_buffer, 128, bit.bor(ImGuiInputTextFlags.EnterReturnsTrue, ImGuiInputTextFlags.CallbackHistory, ImGuiInputTextFlags.CallbackCompletion), callback_func)
+		command_buffer, result = ImGui.InputTextWithHint("##ConsoleInput", "Command", command_buffer, 1024, bit.bor(ImGuiInputTextFlags.EnterReturnsTrue, ImGuiInputTextFlags.CallbackHistory, ImGuiInputTextFlags.CallbackCompletion), callback_func)
 		if(result) then
 			if #command_buffer > 0 then -- Don't insert empty strings to history
 				add_to_history(command_buffer)
