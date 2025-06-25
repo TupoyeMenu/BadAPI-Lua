@@ -2,10 +2,10 @@
 
 json = require("thirdparty.includes.json")
 
-require("includes.extentions.math")
-require("includes.extentions.string")
-require("includes.extentions.table")
-require("includes.extentions.vector")
+require("includes.extensions.math")
+require("includes.extensions.string")
+require("includes.extensions.table")
+require("includes.extensions.vector")
 
 require("includes.common")
 require("includes.ffi_init")
