@@ -13,7 +13,7 @@ local commands = {}
 
 local default_convar_flags =
 {
-	ARCHIVE = false,
+	ARCHIVE = true,
 	LOCAL_ONLY = true,
 	SP_ONLY = false,
 	MP_ONLY = false

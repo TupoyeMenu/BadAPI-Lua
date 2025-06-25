@@ -4,6 +4,7 @@ json = require("thirdparty.includes.json")
 
 require("includes.extentions.math")
 require("includes.extentions.string")
+require("includes.extentions.table")
 require("includes.extentions.vector")
 
 require("includes.common")

@@ -87,7 +87,7 @@ function entity.delete(entity_index)
 		ENTITY.SET_ENTITY_AS_MISSION_ENTITY(entity_index, true, true)
 	end
 	ENTITY.DELETE_ENTITY(entity_index) -- This will almost always fail
-	ENTITY.SET_PED_AS_NO_LONGER_NEEDED(entity_index)
+	ENTITY.SET_ENTITY_AS_NO_LONGER_NEEDED(entity_index)
 	return true
 end
 

@@ -160,6 +160,16 @@ command.add("delete_veh", function(player_id, args)
 		end
 	end)
 end, nil, "Deletes the vehicle you are currently in")
+command.add("delete_all_vehicles", function(player_id, args)
+	script.run_in_fiber(function()
+		for index, veh in ipairs(entities.get_all_vehicles_as_handles()) do
+			if entity.take_control_of(veh) then
+				entity.delete(veh)
+			end
+		end
+	end)
+end, nil, "Deletes all vehicles on the map.")
+
 
 command.add("god", function(player_id, args)
 	local player_ped = self.get_ped()
