@@ -3,15 +3,15 @@ local STREAMING = STREAMING
 local ENTITY = ENTITY
 local VEHICLE = VEHICLE
 
-vehicle = {}
-spawned_vehicles = {}
+Vehicle = {}
+SpawnedVehicles = {}
 
 ---@param veh number Vehicle to set for.
 ---@param is_stolen boolean Should set vehicle as stolen.
-function vehicle.set_mp_bitset(veh, is_stolen)
+function Vehicle.SetMPBitset(veh, is_stolen)
 	DECORATOR.DECOR_SET_INT(veh, "MPBitset", 0)
 	local net_id = NETWORK.VEH_TO_NET(veh)
-	spawned_vehicles[#spawned_vehicles+1] = net_id
+	SpawnedVehicles[#SpawnedVehicles+1] = net_id
 	if NETWORK.NETWORK_GET_ENTITY_IS_NETWORKED(veh) then
 		NETWORK.SET_NETWORK_ID_EXISTS_ON_ALL_MACHINES(net_id, true)
 	end
@@ -21,7 +21,7 @@ end
 ---Spawns a vehicle
 ---@param args table
 ---@return integer|nil vehicle_handle
-function vehicle.spawn(args)
+function Vehicle.Spawn(args)
 	if isstring(args.name) then
 		args.hash = joaat(args.name)
 	end
@@ -30,7 +30,7 @@ function vehicle.spawn(args)
 		args.location = vec3:new(args.x, args.y, args.z)
 	end
 
-	if not entity.request_model(args.hash) then
+	if not Entity.RequestModel(args.hash) then
 		return
 	end
 
@@ -49,7 +49,7 @@ function vehicle.spawn(args)
 	end
 
 	if args.is_networked then
-		vehicle.set_mp_bitset(veh, args.is_stolen)
+		Vehicle.SetMPBitset(veh, args.is_stolen)
 	end
 
 	return veh
@@ -146,7 +146,7 @@ HORN_CLASSICALLOOP = 34
 ---Upgrades the vehicle to max
 ---@param veh number
 ---@param performance_only boolean
-function vehicle.upgrade(veh, performance_only)
+function Vehicle.Upgrade(veh, performance_only)
 	VEHICLE.SET_VEHICLE_MOD_KIT(veh, 0)
 	if not performance_only then
 		VEHICLE.TOGGLE_VEHICLE_MOD(veh, MOD_TURBO, true);
@@ -191,14 +191,14 @@ end
 
 ---Removes all upgrades from the vehicle
 ---@param veh number
-function vehicle.downgrade(veh)
+function Vehicle.Downgrade(veh)
 	VEHICLE.SET_VEHICLE_MOD_KIT(veh, 0);
 	for i = 0, 50, 1 do
 		VEHICLE.REMOVE_VEHICLE_MOD(veh, i)
 	end
 end
 
-function vehicle.fix(veh)
+function Vehicle.Fix(veh)
 	VEHICLE.SET_VEHICLE_FIXED(veh)
 	VEHICLE.SET_VEHICLE_DIRT_LEVEL(veh, 0)
 	local veh_ptr = ffi.cast("struct CVehicle*", menu_exports.handle_to_ptr(veh))
@@ -232,7 +232,7 @@ end
 
 ---@param include_missing_vehicles boolean?
 ---@return table?
-function vehicle.get_data_for_all_vehicles(include_missing_vehicles)
+function Vehicle.GetDataForAllVehicles(include_missing_vehicles)
 	if vehicles_table == nil then return end
 	local result_table = {}
 	for key, value in ipairs(vehicles_table) do
@@ -245,8 +245,8 @@ end
 
 ---@param include_missing_vehicles boolean?
 ---@return table?
-function vehicle.get_all_vehicle_models(include_missing_vehicles)
-	local all_vehicles = vehicle.get_data_for_all_vehicles(include_missing_vehicles)
+function Vehicle.GetAllVehicleModels(include_missing_vehicles)
+	local all_vehicles = Vehicle.GetDataForAllVehicles(include_missing_vehicles)
 	if all_vehicles == nil then return end
 
 	local result_table = {}

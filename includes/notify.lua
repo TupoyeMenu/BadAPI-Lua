@@ -1,20 +1,20 @@
 
-notify = {}
+Notify = {}
 
-function notify.above_map(text)
+function Notify.AboveMap(text)
 	HUD.SET_TEXT_OUTLINE()
 	HUD.BEGIN_TEXT_COMMAND_THEFEED_POST("STRING")
 	HUD.ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME(text)
 	HUD.END_TEXT_COMMAND_THEFEED_POST_TICKER(false, false)
 end
 
-function notify.show_subtitle(text, ms)
+function Notify.ShowSubtitle(text, ms)
 	HUD.BEGIN_TEXT_COMMAND_PRINT("STRING")
 	HUD.ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME(text)
 	HUD.END_TEXT_COMMAND_PRINT(ms, true)
 end
 
-function notify.display_help_text(text)
+function Notify.DisplayHelpText(text)
 	HUD.BEGIN_TEXT_COMMAND_DISPLAY_HELP("STRING")
 	HUD.ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME(text)
 	HUD.END_TEXT_COMMAND_DISPLAY_HELP(0, false, true, -1)

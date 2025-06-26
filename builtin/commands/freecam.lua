@@ -112,14 +112,14 @@ script.register_looped("FreecamTick", function (script)
 	freecam.on_tick()
 end)
 
-command.add("freecam", function (player_id, args)
+Command.Add("freecam", function (player_id, args)
 	script.run_in_fiber(function ()
 		freecam.moves_player = false
 		freecam.toggle()
 	end)
 end, nil, nil, {LOCAL_ONLY=true})
 
-command.add("noclip", function (player_id, args)
+Command.Add("noclip", function (player_id, args)
 	script.run_in_fiber(function ()
 		freecam.moves_player = true
 		freecam.toggle()

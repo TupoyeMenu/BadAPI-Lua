@@ -2,9 +2,9 @@ local STREAMING = STREAMING
 local ENTITY = ENTITY
 local entities = entities
 
-entity = {}
+Entity = {}
 
-function entity.take_control_of(entity_index, timeout)
+function Entity.TakeControlOf(entity_index, timeout)
 	if timeout == nil then
 		timeout = 300
 	end
@@ -15,7 +15,7 @@ end
 ---Loads the model into memory so you can spawn it later
 ---@param hash number Joaat hash of the model name
 ---@return boolean has_loaded
-function entity.request_model(hash)
+function Entity.RequestModel(hash)
 	if STREAMING.HAS_MODEL_LOADED(hash) then
 		return true
 	end
@@ -34,7 +34,7 @@ end
 ---@param peds boolean Inlcude peds
 ---@param props boolean Inlcude props
 ---@return table entity_array
-function entity.get_entities(vehicles, peds, props)
+function Entity.GetEntities(vehicles, peds, props)
 	local result = {}
 
 	if vehicles then
@@ -59,7 +59,7 @@ end
 ---Deletes the entity
 ---@param entity_index integer
 ---@return boolean success
-function entity.delete(entity_index)
+function Entity.Delete(entity_index)
 	if not ENTITY.DOES_ENTITY_EXIST(entity_index) then
 		return false
 	end
@@ -68,13 +68,13 @@ function entity.delete(entity_index)
 		return false
 	end
 
-	for _, value in ipairs(entity.get_entities(true, true, true)) do
+	for _, value in ipairs(Entity.GetEntities(true, true, true)) do
 		if ENTITY.IS_ENTITY_A_VEHICLE(entity_index) and ENTITY.IS_ENTITY_A_PED(value) and PED.IS_PED_IN_VEHICLE(value, entity_index, true) then
 			TASK.CLEAR_PED_TASKS_IMMEDIATELY(value)
 			goto continue
 		end
 		if ENTITY.GET_ENTITY_ATTACHED_TO(value) == entity_index then
-			entity.delete(value)
+			Entity.Delete(value)
 		end
 		::continue::
 	end
@@ -95,7 +95,7 @@ end
 ---Loads terrain at location
 ---@param location vec3
 ---@return boolean found_ground
-function entity.load_ground_at_3dcoords(location)
+function Entity.LoadGroundAt3dcoords(location)
 	local max_ground_check --[[<const>]] = 1000.0
 	local max_attempts --[[ <const>]] = 300
 	local ground_z = location.z

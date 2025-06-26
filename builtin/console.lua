@@ -14,8 +14,8 @@ local history_index = 0
 ---@param missing_only boolean? Results will only contain the part of the string that is missing
 ---@return table
 local function get_suggestions(text, missing_only)
-	local command_table = command.get_table()
-	local args = command.parse(text, false)
+	local command_table = Command.GetTable()
+	local args = Command.Parse(text, false)
 	local results = {}
 	local has_complitions = false
 
@@ -202,7 +202,7 @@ event.register_handler(menu_event.Draw, "Console", function()
 			if #command_buffer > 0 then -- Don't insert empty strings to history
 				add_to_history(command_buffer)
 			end
-			command.call(self.get_id(), command_buffer)
+			Command.Call(self.get_id(), command_buffer)
 			command_buffer = ""
 			should_set_focus = true
 		end
@@ -248,7 +248,7 @@ event.register_handler(menu_event.Wndproc, "ConoleHotkey", function (hwnd, msg, 
 end)
 
 script.register_looped("ConsoleInputLock", function (script)
-	local actions = control.get_actions_using_this_key(console_hotkey)
+	local actions = Control.GetActionsUsingThisKey(console_hotkey)
 	for _, value in ipairs(actions) do
 		PAD.DISABLE_CONTROL_ACTION(0, value, false)
 	end
@@ -258,7 +258,7 @@ script.register_looped("ConsoleInputLock", function (script)
 	end
 end)
 
-command.add("clear_history", function (player_id, args)
+Command.Add("clear_history", function (player_id, args)
 	command_history = {}
 	history_index = 0
 end, nil, "Clears the command history", {LOCAL_ONLY=true})

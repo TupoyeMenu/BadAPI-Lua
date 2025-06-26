@@ -2,20 +2,20 @@
 local players = {}
 
 ---@class player
-player = {}
+Player = {}
 
 ---Creates a new player object
 ---@param p integer|ffi.cdata* Pointer to CNetGamePlayer or player index
 ---@return player?
-function player:new(p)
+function Player:new(p)
 	o = {}
 	local net_player
 	if type(p) == "number" and p <= 32 then
-		net_player = player.get_net_player_from_pid(p)
+		net_player = Player.GetNetPlayerFromPid(p)
 	elseif type(p) == "cdata" then
 		net_player = p
 	else
-		print_stacktrace("bad argument 'p' for 'player:new'.\nExpected number or cdata got " .. type(p) .. "\nIn:")
+		PrintStacktrace("bad argument 'p' for 'player:new'.\nExpected number or cdata got " .. type(p) .. "\nIn:")
 		return nil
 	end
 
@@ -29,24 +29,24 @@ end
 ---Gets CNetGamePlayer* from player id
 ---@param pid number player_id
 ---@return ffi.cdata*?
-function player.get_net_player_from_pid(pid)
+function Player.GetNetPlayerFromPid(pid)
 	return players[pid]
 end
 
 ---Gets player from message id
 ---@param id number
 ---@return player?
-function player.get_by_message_id(id)
+function Player.GetByMessageId(id)
 	for _, ply in pairs(players) do
 		if ply and ply.m_MessageId == id then
-			return player:new(ply)
+			return Player:new(ply)
 		end
 	end
 	return nil
 end
 
 ---@return integer player_id -1 if not found
-function player:get_id()
+function Player:GetId()
 	for index, ply in pairs(players) do
 		if ply == self.m_handle then
 			return index

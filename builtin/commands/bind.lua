@@ -88,7 +88,7 @@ key_name_to_wndproc =
 bind = {}
 local bind_table = {}
 
-command.add("bind", function(player_id, args)
+Command.Add("bind", function(player_id, args)
 	local key_name = args[2]
 	local command = args[3]
 	if key_name and command then
@@ -112,7 +112,7 @@ command.add("bind", function(player_id, args)
 	end
 end, nil, nil, {LOCAL_ONLY=true}) --TODO Add ARCHIVE
 
-command.add("unbindall", function (player_id, args)
+Command.Add("unbindall", function (player_id, args)
 	bind_table = {}
 end, nil, "Removes all binds", {LOCAL_ONLY=true})
 
@@ -146,9 +146,9 @@ local function check_bind_keys(key_just_pressed, is_down)
 	for _, bind in ipairs(bind_table) do
 		if are_all_bind_keys_down(bind) then
 			if is_down and bind.down_command then
-				command.call(self.get_id(), bind.down_command, true)
+				Command.Call(self.get_id(), bind.down_command, true)
 			elseif not is_down and bind.up_command and is_key_in_bind(bind, key_just_pressed) then
-				command.call(self.get_id(), bind.up_command, true)
+				Command.Call(self.get_id(), bind.up_command, true)
 			end
 		end
 	end

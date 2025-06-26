@@ -1,4 +1,4 @@
-local player_join_msg = convar.add("player_join_msg", "1",
+local player_join_msg = ConVar.Add("player_join_msg", "1",
 	"Shows a '{} joined.' message above the minimap when a player joines.", { LOCAL_ONLY = true })
 
 event.register_handler("PlayerJoin", "MinimapJoinMessage", function(name, id, net_player)
@@ -11,7 +11,7 @@ event.register_handler("PlayerJoin", "MinimapJoinMessage", function(name, id, ne
 
 	if tobool(player_join_msg.value) then
 		script.run_in_fiber(function()
-			notify.above_map("<C>" .. name .. "</C> joined.")
+			Notify.AboveMap("<C>" .. name .. "</C> joined.")
 		end)
 	end
 end)
