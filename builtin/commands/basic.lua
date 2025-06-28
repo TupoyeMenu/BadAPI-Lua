@@ -92,79 +92,83 @@ end
 
 Command.Add("spawn", function(player_id, args)
 	script.run_in_fiber(function()
-		local player_ped = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(player_id)
-		if not ENTITY.DOES_ENTITY_EXIST(player_ped) then return end
+		local ped_handle = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(player_id)
+		local ped = Ped:new(ped_handle)
+		if not ped:IsValid() then return end
 
-		local pos = ENTITY.GET_ENTITY_COORDS(player_ped, false) -- FIXME player_ped may not be loaded
-
-		local veh = Vehicle.Spawn{name=args[2], location=pos, is_networked=true}
+		local veh = Vehicle.Spawn{name=args[2], location=ped:GetPosition(), is_networked=true}
 
 		if spawn_in_vehicle and tobool(spawn_in_vehicle.value) and veh then
-			PED.SET_PED_INTO_VEHICLE(player_ped, veh, -1)
+			ped:SetIntoVehicle(veh, -1)
 		end
 	end)
 end, spawn_complition, "Spawns a vehicle")
 Command.Add("repair", function(player_id, args)
 	script.run_in_fiber(function()
-		local player_ped = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(player_id)
-		if not ENTITY.DOES_ENTITY_EXIST(player_ped) then return end
+		local ped_handle = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(player_id)
+		local ped = Ped:new(ped_handle)
+		if not ped:IsValid() then return end
 
-		local veh = PED.GET_VEHICLE_PED_IS_USING(player_ped)
-		if not ENTITY.DOES_ENTITY_EXIST(veh) then return end
+		local veh = ped:GetVehicle()
+		if veh == nil then return end
 
-		if Entity.TakeControlOf(veh) then
-			Vehicle.Fix(veh)
+		if veh:TakeControlOf() then
+			veh:Fix()
 		end
 	end)
 end, spawn_complition, "Spawns a vehicle")
 
 Command.Add("upgrade_veh", function(player_id, args)
 	script.run_in_fiber(function()
-		local player_ped = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(player_id)
-		if not ENTITY.DOES_ENTITY_EXIST(player_ped) then return end
+		local ped_handle = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(player_id)
+		local ped = Ped:new(ped_handle)
+		if not ped:IsValid() then return end
 
-		local veh = PED.GET_VEHICLE_PED_IS_USING(player_ped)
-		if not ENTITY.DOES_ENTITY_EXIST(veh) then return end
+		local veh = ped:GetVehicle()
+		if veh == nil then return end
 
-		if Entity.TakeControlOf(veh) then
-			Vehicle.Upgrade(veh, tobool(args[2]))
+		if veh:TakeControlOf() then
+			veh:Upgrade(tobool(args[2]))
 		end
 	end)
 end)
 
 Command.Add("downgrade_veh", function(player_id, args)
 	script.run_in_fiber(function()
-		local player_ped = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(player_id)
-		if not ENTITY.DOES_ENTITY_EXIST(player_ped) then return end
+		local ped_handle = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(player_id)
+		local ped = Ped:new(ped_handle)
+		if not ped:IsValid() then return end
 
-		local veh = PED.GET_VEHICLE_PED_IS_USING(player_ped)
-		if not ENTITY.DOES_ENTITY_EXIST(veh) then return end
+		local veh = ped:GetVehicle()
+		if veh == nil then return end
 
-		if Entity.TakeControlOf(veh) then
-			Vehicle.Downgrade(veh)
+		if veh:TakeControlOf() then
+			veh:Downgrade()
 		end
 	end)
 end)
 Command.Add("delete_veh", function(player_id, args)
 	script.run_in_fiber(function()
-		local player_ped = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(player_id)
-		if not ENTITY.DOES_ENTITY_EXIST(player_ped) then return end
+		local ped_handle = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(player_id)
+		local ped = Ped:new(ped_handle)
+		if not ped:IsValid() then return end
 
-		local veh = PED.GET_VEHICLE_PED_IS_USING(player_ped)
-		if not ENTITY.DOES_ENTITY_EXIST(veh) then return end
+		local veh = ped:GetVehicle()
+		if veh == nil then return end
 
-		TASK.CLEAR_PED_TASKS_IMMEDIATELY(player_ped)
-
-		if Entity.TakeControlOf(veh) then
-			Entity.Delete(veh)
+		TASK.CLEAR_PED_TASKS_IMMEDIATELY(ped_handle)
+		
+		if veh:TakeControlOf() then
+			veh:Delete()
 		end
 	end)
 end, nil, "Deletes the vehicle you are currently in")
 Command.Add("delete_all_vehicles", function(player_id, args)
 	script.run_in_fiber(function()
-		for index, veh in ipairs(entities.get_all_vehicles_as_handles()) do
-			if Entity.TakeControlOf(veh) then
-				Entity.Delete(veh)
+		for index, veh_handle in ipairs(entities.get_all_vehicles_as_handles()) do
+			local veh = Vehicle:new(veh_handle)
+			if veh:TakeControlOf() then
+				veh:Delete()
 			end
 		end
 	end)
@@ -172,14 +176,14 @@ end, nil, "Deletes all vehicles on the map.")
 
 
 Command.Add("god", function(player_id, args)
-	local player_ped = self.get_ped()
-	local player_ped_ptr = ffi.cast("struct CPed*", menu_exports.handle_to_ptr(player_ped))
-	if player_ped_ptr then
-		if player_ped_ptr.m_damage_bits.isInvincible == 0 then
-			player_ped_ptr.m_damage_bits.isInvincible = 1
+	local player_ped_handle = self.get_ped()
+	local ped = Ped:new(player_ped_handle)
+	if ped:IsValid() then
+		if not ped:IsInvincible() then
+			ped:SetInvincible(true)
 			log.info("God ON")
 		else
-			player_ped_ptr.m_damage_bits.isInvincible = 0
+			ped:SetInvincible(false)
 			log.info("God OFF")
 		end
 	end

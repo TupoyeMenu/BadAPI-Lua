@@ -1,15 +1,355 @@
+local ffi = require("ffi")
 local STREAMING = STREAMING
 local ENTITY = ENTITY
 local entities = entities
 
+---@class Entity
+---@field m_Pointer ffi.cdata*
+---@field m_Handle EntityHandle
 Entity = {}
 
-function Entity.TakeControlOf(entity_index, timeout)
+---Creates an entity object for an existing entity.
+---@param p integer|ffi.cdata*|nil Pointer to fwEntity or entity index, nil is only allowed for inheritance.
+---@return Entity
+function Entity:new(p)
+	assert(type(p) == "number" or type(p) == "cdata" or p == nil, "bad argument 'p' for 'Entity:new'.\nExpected number or cdata got " .. type(p))
+
+	---@type Entity
+	---@diagnostic disable-next-line: missing-fields
+	o = {}
+
+	if type(p) == "number" then
+		o.m_Handle = p
+		Entity.PopulatePointer(o)
+	elseif type(p) == "cdata" then
+		o.m_Pointer = p
+		Entity.PopulateHandle(o)
+	end
+
+	setmetatable(o, self)
+	self.__index = self
+
+	return o
+end
+
+---@protected
+function Entity:AssertValid()
+	assert(self:IsValid(), "Entity is invalid")
+end
+
+function Entity:PopulatePointer()
+	self.m_Pointer = menu_exports.handle_to_ptr(self.m_Handle)
+end
+function Entity:PopulateHandle()
+	if (self.m_Pointer) then
+		self.m_Handle = menu_exports.ptr_to_handle(self.m_Pointer)
+	end
+end
+
+---@return EntityHandle
+function Entity:GetHandle()
+	self:AssertValid()
+	return self.m_Handle
+end
+
+---@return ffi.cdata*
+function Entity:GetPointer()
+	return self.m_Pointer
+end
+
+function Entity:TakeControlOf(timeout)
+	self:AssertValid()
 	if timeout == nil then
 		timeout = 300
 	end
 	--TODO: Port to lua
-	return entities.take_control_of(entity_index, timeout)
+	return entities.take_control_of(self:GetHandle(), timeout)
+end
+
+---@return boolean
+function Entity:HasControl()
+	self:AssertValid()
+	return NETWORK.NETWORK_HAS_CONTROL_OF_ENTITY(self.m_Handle)
+end
+
+---@return boolean
+function Entity:IsValid()
+	return ENTITY.DOES_ENTITY_EXIST(self.m_Handle)
+end
+
+---@return boolean
+function Entity:IsPed()
+	self:AssertValid()
+	return ENTITY.IS_ENTITY_A_PED(self.m_Handle)
+end
+
+---@return boolean
+function Entity:IsVehicle()
+	self:AssertValid()
+	return ENTITY.IS_ENTITY_A_VEHICLE(self.m_Handle)
+end
+
+---@return boolean
+function Entity:IsObject()
+	self:AssertValid()
+	return ENTITY.IS_ENTITY_AN_OBJECT(self.m_Handle)
+end
+
+---TODO Move to Ped class
+---@return boolean
+function Entity:IsPlayer()
+	self:AssertValid()
+	return PED.IS_PED_A_PLAYER(self.m_Handle)
+end
+
+---@return boolean
+function Entity:IsMissionEntity()
+	self:AssertValid()
+	return ENTITY.IS_ENTITY_A_MISSION_ENTITY(self.m_Handle)
+end
+
+---@return integer
+function Entity:GetModel()
+	self:AssertValid()
+	return ENTITY.GET_ENTITY_MODEL(self.m_Handle)
+end
+
+---@return vec3
+function Entity:GetPosition()
+	self:AssertValid()
+	if not ENTITY.DOES_ENTITY_EXIST(self.m_Handle) and self.m_Pointer then
+		local pos = self.m_Pointer.m_Transform.rows[3]
+		return vec3:new(pos.x, pos.y, pos.z)
+	end
+	return ENTITY.GET_ENTITY_COORDS(self.m_Handle, false)
+end
+
+---@param position vec3
+function Entity:SetPosition(position)
+	self:AssertValid()
+	ENTITY.SET_ENTITY_COORDS_NO_OFFSET(self.m_Handle, position.x, position.y, position.z, true, true, false)
+end
+
+---@param order integer
+---@return vec3
+function Entity:GetRotation(order)
+	self:AssertValid()
+	return ENTITY.GET_ENTITY_ROTATION(self.m_Handle, order)
+end
+
+---@param order integer
+---@param rotation vec3
+function Entity:SetRotation(rotation, order)
+	self:AssertValid()
+	return ENTITY.SET_ENTITY_ROTATION(self.m_Handle, rotation.x, rotation.y, rotation.z, order, false)
+end
+
+---@return vec3
+function Entity:GetVelocity()
+	self:AssertValid()
+	return ENTITY.GET_ENTITY_VELOCITY(self.m_Handle)
+end
+
+---@param vel vec3
+function Entity:SetVelocity(vel)
+	self:AssertValid()
+	ENTITY.SET_ENTITY_VELOCITY(self.m_Handle, vel.x, vel.y, vel.z)
+end
+
+---@return number
+function Entity:GetHeading()
+	self:AssertValid()
+	return ENTITY.GET_ENTITY_HEADING(self.m_Handle)
+end
+
+---@param heading number
+function Entity:SetHeading(heading)
+	self:AssertValid()
+	ENTITY.SET_ENTITY_HEADING(self.m_Handle, heading)
+end
+
+---@return number
+function Entity:GetSpeed()
+	self:AssertValid()
+	return ENTITY.GET_ENTITY_SPEED(self.m_Handle)
+end
+
+---@param enabled boolean
+function Entity:SetCollision(enabled)
+	self:AssertValid()
+	ENTITY.SET_ENTITY_COLLISION(self.m_Handle, enabled, true)
+end
+
+---@return boolean
+function Entity:GetCollision()
+	return self.m_Pointer.m_CollisionFlags.m_HasCollision
+end
+
+---@param enabled boolean
+function Entity:SetFrozen(enabled)
+	self:AssertValid()
+	ENTITY.FREEZE_ENTITY_POSITION(self.m_Handle, enabled)
+end
+
+---@return boolean
+function Entity:IsFrozen()
+	return self.m_Pointer.m_Flags.m_Frozen
+end
+
+---@return ffi.cdata*?
+function Entity:GetNetworkObject()
+	self:AssertValid()
+
+	return ffi.cast("struct CDynamicEntity*", self.m_Pointer).m_NetObject
+end
+
+---@return boolean
+function Entity:IsNetworked()
+	return self:GetNetworkObject() ~= nil
+end
+
+---Deletes the entity
+---@return boolean success
+function Entity:Delete()
+	self:AssertValid()
+
+	if self:IsNetworked() then
+		log.fatal("Deleting networked entities is not implemented!")
+		return false
+	else
+		if not ENTITY.IS_ENTITY_A_MISSION_ENTITY(self.m_Handle) then
+			ENTITY.SET_ENTITY_AS_MISSION_ENTITY(self.m_Handle, true, true)
+		end
+		ENTITY.DELETE_ENTITY(self.m_Handle) -- FIXME, this may not work if the entity does not belong to our script
+		return true
+	end
+end
+
+function Entity:PreventMigration()
+	self:AssertValid()
+	if not network.is_session_started() then return end
+
+	if not self:IsNetworked() or not NETWORK.NETWORK_HAS_ENTITY_BEEN_REGISTERED_WITH_THIS_THREAD(self.m_Handle) then
+		return
+	end
+
+	NETWORK.NETWORK_DISABLE_PROXIMITY_MIGRATION(NETWORK.OBJ_TO_NET(self.m_Handle))
+end
+
+---@return boolean
+function Entity:IsInvincible()
+	self:AssertValid()
+
+	return ffi.cast("struct CPhysical*", self.m_Pointer).m_damage_bits.m_IsInvincible
+end
+
+---@param status boolean
+function Entity:SetInvincible(status)
+	self:AssertValid()
+	ENTITY.SET_ENTITY_INVINCIBLE(self.m_Handle, status, true)
+end
+
+---@return boolean
+function Entity:IsDead()
+	self:AssertValid()
+	return ENTITY.IS_ENTITY_DEAD(self.m_Handle, true)
+end
+
+function Entity:Kill()
+	self:AssertValid()
+	if self:HasControl() then
+		ENTITY.SET_ENTITY_HEALTH(self.m_Handle, 0, PLAYER.PLAYER_PED_ID(), 0)
+	else
+		log.fatal("Killing entities without control is not implemented!")
+	end
+end
+
+---@return integer
+function Entity:GetHealth()
+	self:AssertValid()
+	return ENTITY.GET_ENTITY_HEALTH(self.m_Handle)
+end
+
+---@param health number
+function Entity:SetHealth(health)
+	self:AssertValid()
+	ENTITY.SET_ENTITY_HEALTH(self.m_Handle, health, 0, 0)
+end
+
+---@return integer
+function Entity:GetMaxHealth()
+	self:AssertValid()
+	return ENTITY.GET_ENTITY_MAX_HEALTH(self.m_Handle)
+end
+
+---@param health number
+function Entity:SetMaxHealth(health)
+	self:AssertValid()
+	ENTITY.SET_ENTITY_MAX_HEALTH(self.m_Handle, health)
+end
+
+---@return boolean
+function Entity:IsVisible()
+	self:AssertValid()
+	return ENTITY.IS_ENTITY_VISIBLE(self.m_Handle)
+end
+
+---@param status boolean
+function Entity:SetVisible(status)
+	self:AssertValid()
+	ENTITY.SET_ENTITY_VISIBLE(self.m_Handle, status, true)
+end
+
+---@return integer
+function Entity:GetAlpha()
+	self:AssertValid()
+	return ENTITY.GET_ENTITY_ALPHA(self.m_Handle)
+end
+
+---Alpha is not networked
+---@param alpha integer
+function Entity:SetAlpha(alpha)
+	self:AssertValid()
+	ENTITY.SET_ENTITY_ALPHA(self.m_Handle, alpha, false)
+end
+
+function Entity:ResetAlpha()
+	self:AssertValid()
+	ENTITY.RESET_ENTITY_ALPHA(self.m_Handle)
+end
+
+---@return boolean
+function Entity:HasInterior()
+	self:AssertValid()
+	return INTERIOR.GET_ROOM_KEY_FROM_ENTITY(self.m_Handle) ~= 0
+end
+
+---@param explosion integer
+---@param damage number
+---@param is_visible boolean
+---@param is_audible boolean
+---@param camera_shake number
+---@param no_damage boolean?
+function Entity:Explode(explosion, damage, is_visible, is_audible, camera_shake, no_damage)
+	self:AssertValid()
+	no_damage = no_damage or false
+
+	local pos = self:GetPosition()
+	FIRE.ADD_EXPLOSION(pos.x, pos.y, pos.z, explosion, damage, is_audible, is_visible, camera_shake, no_damage)
+end
+
+---@param other Entity
+---@return boolean
+function Entity:__eq(other)
+	if self.m_Handle ~= 0 and other.m_Handle ~= 0 then
+		return self.m_Handle == other.m_Handle
+	end
+
+	if self.m_Pointer ~= nil and other.m_Pointer ~= nil then
+		return self.m_Pointer == other.m_Pointer
+	end
+
+	return false
 end
 
 ---Loads the model into memory so you can spawn it later
@@ -54,41 +394,6 @@ function Entity.GetEntities(vehicles, peds, props)
 	end
 
 	return result
-end
-
----Deletes the entity
----@param entity_index integer
----@return boolean success
-function Entity.Delete(entity_index)
-	if not ENTITY.DOES_ENTITY_EXIST(entity_index) then
-		return false
-	end
-
-	if not NETWORK.NETWORK_HAS_CONTROL_OF_ENTITY(entity_index) then
-		return false
-	end
-
-	for _, value in ipairs(Entity.GetEntities(true, true, true)) do
-		if ENTITY.IS_ENTITY_A_VEHICLE(entity_index) and ENTITY.IS_ENTITY_A_PED(value) and PED.IS_PED_IN_VEHICLE(value, entity_index, true) then
-			TASK.CLEAR_PED_TASKS_IMMEDIATELY(value)
-			goto continue
-		end
-		if ENTITY.GET_ENTITY_ATTACHED_TO(value) == entity_index then
-			Entity.Delete(value)
-		end
-		::continue::
-	end
-
-	if ENTITY.IS_ENTITY_ATTACHED(entity_index) then
-		ENTITY.DETACH_ENTITY(entity_index, false, false)
-	end
-	ENTITY.SET_ENTITY_COORDS_NO_OFFSET(entity_index, 7000, 7000, 0, false, false, false)
-	if not ENTITY.IS_ENTITY_A_MISSION_ENTITY(entity_index) then
-		ENTITY.SET_ENTITY_AS_MISSION_ENTITY(entity_index, true, true)
-	end
-	ENTITY.DELETE_ENTITY(entity_index) -- This will almost always fail
-	ENTITY.SET_ENTITY_AS_NO_LONGER_NEEDED(entity_index)
-	return true
 end
 
 
