@@ -1,27 +1,33 @@
 local ffi = require("ffi")
-local STREAMING = STREAMING
-local ENTITY = ENTITY
-local VEHICLE = VEHICLE
 
-vehicle = {}
-spawned_vehicles = {}
+---@class Vehicle: Entity
+Vehicle = Entity:new()
+SpawnedVehicles = {}
 
----@param veh number Vehicle to set for.
+local real_new = Vehicle.new
+
+---Creates a vehicle object for an existing vehicle.
+---@param p integer|ffi.cdata*|nil Pointer to CVehicle or entity index, nil is only allowed for inheritance.
+---@return Vehicle
+function Vehicle:new(p)
+	return real_new(self, p)
+end
+
 ---@param is_stolen boolean Should set vehicle as stolen.
-function vehicle.set_mp_bitset(veh, is_stolen)
-	DECORATOR.DECOR_SET_INT(veh, "MPBitset", 0)
-	local net_id = NETWORK.VEH_TO_NET(veh)
-	spawned_vehicles[#spawned_vehicles+1] = net_id
-	if NETWORK.NETWORK_GET_ENTITY_IS_NETWORKED(veh) then
+function Vehicle:SetMPBitset(is_stolen)
+	DECORATOR.DECOR_SET_INT(self.m_Handle, "MPBitset", 0)
+	local net_id = NETWORK.VEH_TO_NET(self.m_Handle)
+	SpawnedVehicles[#SpawnedVehicles+1] = net_id
+	if NETWORK.NETWORK_GET_ENTITY_IS_NETWORKED(self.m_Handle) then
 		NETWORK.SET_NETWORK_ID_EXISTS_ON_ALL_MACHINES(net_id, true)
 	end
-	VEHICLE.SET_VEHICLE_IS_STOLEN(veh, is_stolen)
+	VEHICLE.SET_VEHICLE_IS_STOLEN(self.m_Handle, is_stolen)
 end
 
 ---Spawns a vehicle
 ---@param args table
----@return integer|nil vehicle_handle
-function vehicle.spawn(args)
+---@return Vehicle|nil vehicle_handle
+function Vehicle.Spawn(args)
 	if isstring(args.name) then
 		args.hash = joaat(args.name)
 	end
@@ -30,7 +36,7 @@ function vehicle.spawn(args)
 		args.location = vec3:new(args.x, args.y, args.z)
 	end
 
-	if not entity.request_model(args.hash) then
+	if not Entity.RequestModel(args.hash) then
 		return
 	end
 
@@ -42,15 +48,19 @@ function vehicle.spawn(args)
 		args.is_stolen = false
 	end
 
-	local veh = VEHICLE.CREATE_VEHICLE(args.hash, args.location.x, args.location.y, args.location.z, args.heading, args.is_networked, args.is_script_veh, false)
+	local veh_handle = VEHICLE.CREATE_VEHICLE(args.hash, args.location.x, args.location.y, args.location.z, args.heading, args.is_networked, args.is_script_ent, false)
+	local veh = Vehicle:new(veh_handle)
+	if not veh:IsValid() then return nil end
 
 	if args.no_longer_needed == true or args.no_longer_needed == nil then
 		STREAMING.SET_MODEL_AS_NO_LONGER_NEEDED(args.hash)
 	end
 
 	if args.is_networked then
-		vehicle.set_mp_bitset(veh, args.is_stolen)
+		veh:SetMPBitset(args.is_stolen)
 	end
+
+	veh:SetPosition(args.location)
 
 	return veh
 end
@@ -143,10 +153,36 @@ HORN_CLASSICALLOOP1 = 32
 HORN_CLASSICAL8 = 33
 HORN_CLASSICALLOOP = 34
 
+VehicleClassNames = {
+	"Compact",
+	"Sedan",
+	"SUV",
+	"Coupe",
+	"Muscle",
+	"Sport Classic",
+	"Sport",
+	"Super",
+	"Motorcycle",
+	"Off-road",
+	"Industrial",
+	"Utility",
+	"Van",
+	"Cycle",
+	"Boat",
+	"Helicopter",
+	"Plane",
+	"Service",
+	"Emergency",
+	"Military",
+	"Commercial",
+	"Rail",
+	"Open Wheel"
+}
+
 ---Upgrades the vehicle to max
----@param veh number
 ---@param performance_only boolean
-function vehicle.upgrade(veh, performance_only)
+function Vehicle:Upgrade(performance_only)
+	local veh = self.m_Handle
 	VEHICLE.SET_VEHICLE_MOD_KIT(veh, 0)
 	if not performance_only then
 		VEHICLE.TOGGLE_VEHICLE_MOD(veh, MOD_TURBO, true);
@@ -190,23 +226,102 @@ function vehicle.upgrade(veh, performance_only)
 end
 
 ---Removes all upgrades from the vehicle
----@param veh number
-function vehicle.downgrade(veh)
-	VEHICLE.SET_VEHICLE_MOD_KIT(veh, 0);
+function Vehicle:Downgrade()
+	VEHICLE.SET_VEHICLE_MOD_KIT(self.m_Handle, 0);
 	for i = 0, 50, 1 do
-		VEHICLE.REMOVE_VEHICLE_MOD(veh, i)
+		VEHICLE.REMOVE_VEHICLE_MOD(self.m_Handle, i)
 	end
 end
 
-function vehicle.fix(veh)
-	VEHICLE.SET_VEHICLE_FIXED(veh)
-	VEHICLE.SET_VEHICLE_DIRT_LEVEL(veh, 0)
-	local veh_ptr = ffi.cast("struct CVehicle*", menu_exports.handle_to_ptr(veh))
+function Vehicle:Fix()
+	VEHICLE.SET_VEHICLE_FIXED(self.m_Handle)
+	VEHICLE.SET_VEHICLE_DIRT_LEVEL(self.m_Handle, 0)
+	local veh_ptr = ffi.cast("struct CVehicle*", self.m_Pointer)
 	if veh_ptr then -- Fix water damage
-		veh_ptr.m_DynamicFlags.unk0 = 0
-		veh_ptr.m_DynamicFlags.unk1 = 0
-		veh_ptr.m_DynamicFlags.unk2 = 0
+		veh_ptr.m_DynamicFlags.m_Unk0 = 0
+		veh_ptr.m_DynamicFlags.m_Unk1 = 0
+		veh_ptr.m_DynamicFlags.m_Unk2 = 0
 	end
+end
+
+---@return integer
+function Vehicle:GetGear()
+	return VEHICLE.GET_VEHICLE_CURRENT_DRIVE_GEAR_(self.m_Handle)
+end
+
+---@return number
+function Vehicle:GetRevRatio()
+	return VEHICLE.GET_VEHICLE_CURRENT_REV_RATIO_(self.m_Handle)
+end
+
+---@return number
+function Vehicle:GetMaxSpeed()
+	return VEHICLE.GET_VEHICLE_ESTIMATED_MAX_SPEED(self.m_Handle)
+end
+
+---@param text string Number plate text, must be 8 or less characters long.
+function Vehicle:SetPlateText(text)
+	if #text > 8 then
+		return
+	end
+
+	VEHICLE.SET_VEHICLE_NUMBER_PLATE_TEXT(self.m_Handle, text)
+end
+
+---@param seat integer
+---@return boolean
+function Vehicle:IsSeatFree(seat)
+	return VEHICLE.IS_VEHICLE_SEAT_FREE(self.m_Handle, seat, true)
+end
+
+---@return boolean
+function Vehicle:SupportsBoost()
+	return VEHICLE.GET_HAS_ROCKET_BOOST(self.m_Handle)
+end
+
+---@return boolean
+function Vehicle:IsBoostActive()
+	return VEHICLE.IS_ROCKET_BOOST_ACTIVE(self.m_Handle)
+end
+
+
+---@param percentage number
+function Vehicle:SetBoostCharge(percentage)
+	if not self:SupportsBoost() then
+		return
+	end
+
+	VEHICLE.SET_ROCKET_BOOST_FILL(self.m_Handle, percentage)
+end
+
+---@param lower boolean
+function Vehicle:LowerStance(lower)
+	VEHICLE.SET_REDUCED_SUSPENSION_FORCE(self.m_Handle, lower)
+end
+
+function Vehicle.GetFullNameFromModel(model)
+	if not STREAMING.IS_MODEL_VALID(model) then
+		return "Invalid model"
+	end
+
+	local gxt = VEHICLE.GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(model)
+	local display = HUD.GET_FILENAME_FOR_AUDIO_CONVERSATION(gxt)
+
+	local final_name = display == "NULL" and gxt or display
+
+	local maker = HUD.GET_FILENAME_FOR_AUDIO_CONVERSATION(VEHICLE.GET_MAKE_NAME_FROM_VEHICLE_MODEL(model))
+	if maker ~= "NULL" then
+		final_name = maker .. " " .. final_name
+	end
+
+	local id = VEHICLE.GET_VEHICLE_CLASS_FROM_NAME(model)
+	final_name = VehicleClassNames[id+1] .. " " .. final_name
+
+	return final_name
+end
+
+function Vehicle:GetFullName()
+	return Vehicle.GetFullNameFromModel(self:GetModel())
 end
 
 local vehicles_table
@@ -232,7 +347,7 @@ end
 
 ---@param include_missing_vehicles boolean?
 ---@return table?
-function vehicle.get_data_for_all_vehicles(include_missing_vehicles)
+function Vehicle.GetDataForAllVehicles(include_missing_vehicles)
 	if vehicles_table == nil then return end
 	local result_table = {}
 	for key, value in ipairs(vehicles_table) do
@@ -245,8 +360,8 @@ end
 
 ---@param include_missing_vehicles boolean?
 ---@return table?
-function vehicle.get_all_vehicle_models(include_missing_vehicles)
-	local all_vehicles = vehicle.get_data_for_all_vehicles(include_missing_vehicles)
+function Vehicle.GetAllVehicleModels(include_missing_vehicles)
+	local all_vehicles = Vehicle.GetDataForAllVehicles(include_missing_vehicles)
 	if all_vehicles == nil then return end
 
 	local result_table = {}

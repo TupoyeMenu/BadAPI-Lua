@@ -13,7 +13,7 @@ event.register_handler("ReceiveNetMessage", "ReceiveNetMessageTest", function (a
 	end
 	if msgType == 0x4F then
 
-		local ply = player.get_by_message_id(fr_event.m_MsgId)
+		local ply = Player.GetByMessageId(fr_event.m_MsgId)
 		if ply == nil then
 			return
 		end
@@ -57,7 +57,7 @@ event.register_handler("ReceiveNetMessage", "ReceiveNetMessageTest", function (a
 end)
 
 
-command.add("status", function (player_id, args)
+Command.Add("status", function (player_id, args)
 	local mgr = menu_exports.get_network_player_mgr()
 	if mgr == nil then return end
 
@@ -75,13 +75,13 @@ command.add("status", function (player_id, args)
 	end)
 end)
 
-command.add("msg", function (player_id, args)
+Command.Add("msg", function (player_id, args)
 	if args[2] == nil then return end
 
 	log.info(args[2])
 	local guid_str = "a88961c7-b4c8-4a16-a648-ac2d8c9300db"
 
-	local pkt = packet:new()
+	local pkt = Packet:new()
 	pkt:write_message_header(0x24) -- TextMessage
 	local buf = pkt:get_buffer()
 	menu_exports.bitbuffer_WriteString(buf, args[2], 256)
@@ -106,7 +106,7 @@ command.add("msg", function (player_id, args)
 	end
 end, nil, nil, {LOCAL_ONLY=true})
 
-local log_damage_events = convar.add("log_damage_events", "0", nil, {LOCAL_ONLY=true})
+local log_damage_events = ConVar.Add("log_damage_events", "0", nil, {LOCAL_ONLY=true})
 
 event.register_handler("ReceiveNetGameEvent", "ReceiveNetGameEventTest", function (ply, event_id, event_index, event_handled_bits, event_buffer)
 	if tobool(log_damage_events.value) and event_id == 6 then

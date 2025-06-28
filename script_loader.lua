@@ -2,7 +2,7 @@
 local script_name = ""
 
 
-hook.add("Draw", "draw_script_loader", function()
+event.register_handler("Draw", "draw_script_loader", function()
 	if gui.is_open() then
 		if ImGui.Begin("Script loader") then
 			local active

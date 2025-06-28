@@ -35,7 +35,7 @@ end
 
 ---Prints the stacktrace
 ---@param error_before_stacktrace string|nil Placed before the actual stacktrace
-function print_stacktrace(error_before_stacktrace)
+function PrintStacktrace(error_before_stacktrace)
 	if error_before_stacktrace ~= nil then
 		log.warning(error_before_stacktrace .. "\n" .. debug.traceback())
 	else
@@ -45,7 +45,7 @@ end
 
 ---@param address any An FFI pointer.
 ---@return any result An FFI pointer.
-function rip(address)
+function Rip(address)
 	-- We cast address to int64_t here, because if it's unsigned and the offset is negative
 	-- it will set the first bit of uint64_t
 	local result = ffi.cast("int64_t", address) + ffi.cast("int32_t*", address)[0] + 4
@@ -56,7 +56,7 @@ end
 ---@param table_to_print table Table to print
 ---@param depth integer|nil How many tab characters to insert before values.
 ---Prints a table to stdout, uses the print function internally
-function print_table(table_to_print, depth)
+function PrintTable(table_to_print, depth)
 	local tab_string = ""
 	if depth then
 		for i = 1, depth do
@@ -68,7 +68,7 @@ function print_table(table_to_print, depth)
 	for key, value in pairs(table_to_print) do
 		if type(value) == "table" then
 			print(tab_string, "[" .. tostring(key) .. '] =')
-			print_table(value, depth and depth + 1 or 1)
+			PrintTable(value, depth and depth + 1 or 1)
 		else
 			print(
 				tab_string,
@@ -83,7 +83,7 @@ end
 ---@param table_to_print table Table to print
 ---@param depth integer|nil How many tab characters to insert before values.
 ---Prints a table to the log, uses the log.info function internally
-function log_table(table_to_print, depth)
+function LogTable(table_to_print, depth)
 	local tab_string = ""
 	if depth then
 		for _ = 1, depth do
@@ -95,7 +95,7 @@ function log_table(table_to_print, depth)
 	for key, value in pairs(table_to_print) do
 		if istable(value) then
 			log.info(tab_string .. "	[" .. tostring(key) .. '] =')
-			log_table(value, depth and depth + 1 or 1)
+			LogTable(value, depth and depth + 1 or 1)
 		else
 			local key_string = isstring(key)  and '["' .. key .. '"]' or '[' .. tostring(key) .. ']'
 			local value_string = isstring(value)  and '"' .. value .. '",' or tostring(value) .. ','

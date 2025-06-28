@@ -6,7 +6,7 @@ local send_network_damage_ptr
 if menu_exports.is_enhanced() then
 	send_network_damage_ptr = menu_exports.scan_pattern("E8 ? ? ? ? E9 E9 01 00 00 48 8B CB", "") - 0x51
 else
-	send_network_damage_ptr = rip(menu_exports.scan_pattern("E8 ? ? ? ? E9 E9 01 00 00 48 8B CB", "") + 1)
+	send_network_damage_ptr = Rip(menu_exports.scan_pattern("E8 ? ? ? ? E9 E9 01 00 00 48 8B CB", "") + 1)
 end
 
 ---@param source ffi.cdata*

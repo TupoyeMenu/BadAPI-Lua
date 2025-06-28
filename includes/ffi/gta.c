@@ -76,15 +76,63 @@ struct fwExtensibleBase
 };
 #pragma pack(pop)
 
+struct fwCollisionFlags
+{
+	bool m_Unk1 : 1;
+	bool m_HasCollision : 1;
+	bool m_Unk2 : 1;
+	bool m_Unk3 : 1;
+	bool m_Unk4 : 1;
+	bool m_Unk5 : 1;
+	bool m_Unk6 : 1;
+	bool m_Unk7 : 1;
+};
+
+struct fwEntityFlags
+{
+	bool m_Visible : 1;
+	bool m_Unk1 : 1;
+	bool m_Unk2 : 1;
+	bool m_Unk3 : 1;
+	bool m_Unk4 : 1;
+	bool m_Unk5 : 1;
+	bool m_Unk6 : 1;
+	bool m_Unk7 : 1;
+	bool m_Unk8 : 1;
+	bool m_Unk9 : 1;
+	bool m_Unk10 : 1;
+	bool m_Unk11 : 1;
+	bool m_Unk12 : 1;
+	bool m_Unk13 : 1;
+	bool m_Unk14 : 1;
+	bool m_Unk15 : 1;
+	bool m_Dynamic : 1;
+	bool m_Frozen : 1;
+	bool m_Unk18 : 1;
+	bool m_Unk19 : 1;
+	bool m_Unk20 : 1;
+	bool m_Unk21 : 1;
+	bool m_Unk22 : 1;
+	bool m_Unk23 : 1;
+	bool m_Unk24 : 1;
+	bool m_Unk25 : 1;
+	bool m_Unk26 : 1;
+	bool m_Unk27 : 1;
+	bool m_Unk28 : 1;
+	bool m_Unk29 : 1;
+	bool m_Unk30 : 1;
+	bool m_Unk31 : 1;
+};
+
 #pragma pack(push, 8)
 struct fwEntity
 {
 	struct fwExtensibleBase;
 	uint64_t* m_ModelInfo; //0x0020
 	uint8_t m_Type; //0x0028
-	char gap29; //0x0029
+	struct fwCollisionFlags m_CollisionFlags; //0x0029
 	uint16_t gap2A; //0x002A
-	uint32_t m_Flags; //0x002D
+	struct fwEntityFlags m_Flags; //0x002D
 	struct CNavigation* m_Navigation; //0x0030
 	uint16_t gap38; //0x0038
 	uint16_t gap3A; //0x003A
@@ -118,22 +166,22 @@ struct CDynamicEntity
 	struct netObject* m_NetObject;
 	struct 
 	{
-		uint16_t unk0 : 1;
-		uint16_t unk1 : 1;
-		uint16_t unk2 : 1;
-		uint16_t unk3 : 1;
-		uint16_t unk4 : 1;
-		uint16_t unk5 : 1;
-		uint16_t unk6 : 1;
-		uint16_t unk7 : 1;
-		uint16_t unk8 : 1;
-		uint16_t unk9 : 1;
-		uint16_t unk10 : 1;
-		uint16_t unk11 : 1;
-		uint16_t unk12 : 1;
-		uint16_t unk13 : 1;
-		uint16_t unk14 : 1;
-		uint16_t unk15 : 1;
+		uint16_t m_Unk0 : 1;
+		uint16_t m_Unk1 : 1;
+		uint16_t m_Unk2 : 1;
+		uint16_t m_Unk3 : 1;
+		uint16_t m_Unk4 : 1;
+		uint16_t m_Unk5 : 1;
+		uint16_t m_Unk6 : 1;
+		uint16_t m_Unk7 : 1;
+		uint16_t m_Unk8 : 1;
+		uint16_t m_Unk9 : 1;
+		uint16_t m_Unk10 : 1;
+		uint16_t m_Unk11 : 1;
+		uint16_t m_Unk12 : 1;
+		uint16_t m_Unk13 : 1;
+		uint16_t m_Unk14 : 1;
+		uint16_t m_Unk15 : 1;
 	} m_DynamicFlags;
 	char gapD8[14];
 	uint64_t qwordE8;
@@ -153,38 +201,38 @@ struct CAttackers
 #pragma pack(push, 1)
 struct DamageFlags
 {
-	uint32_t unk0 : 1;
-	uint32_t unk1 : 1;
-	uint32_t unk2 : 1;
-	uint32_t unk3 : 1;
-	uint32_t isBulletProof : 1;
-	uint32_t isFireProof : 1;
-	uint32_t isCollisionProof : 1;
-	uint32_t isMeleeProof : 1;
-	uint32_t isInvincible : 1;
-	uint32_t unk9 : 1;
-	uint32_t unk10 : 1;
-	uint32_t isExplosionProof : 1;
-	uint32_t unk12 : 1;
-	uint32_t unk13 : 1;
-	uint32_t unk14 : 1;
-	uint32_t isSteamProof : 1;
-	uint32_t isWaterProof : 1;
-	uint32_t unk17 : 1;
-	uint32_t unk18 : 1;
-	uint32_t unk19 : 1;
-	uint32_t unk20 : 1;
-	uint32_t unk21 : 1;
-	uint32_t unk22 : 1;
-	uint32_t unk23 : 1;
-	uint32_t unk24 : 1;
-	uint32_t unk25 : 1;
-	uint32_t unk26 : 1;
-	uint32_t unk27 : 1;
-	uint32_t unk28 : 1;
-	uint32_t unk29 : 1;
-	uint32_t unk30 : 1;
-	uint32_t unk31 : 1;
+	bool m_Unk0 : 1;
+	bool m_Unk1 : 1;
+	bool m_Unk2 : 1;
+	bool m_Unk3 : 1;
+	bool m_IsBulletProof : 1;
+	bool m_IsFireProof : 1;
+	bool m_IsCollisionProof : 1;
+	bool m_IsMeleeProof : 1;
+	bool m_IsInvincible : 1;
+	bool m_Unk9 : 1;
+	bool m_Unk10 : 1;
+	bool m_IsExplosionProof : 1;
+	bool m_Unk12 : 1;
+	bool m_Unk13 : 1;
+	bool m_Unk14 : 1;
+	bool m_IsSteamProof : 1;
+	bool m_IsWaterProof : 1;
+	bool m_Unk17 : 1;
+	bool m_Unk18 : 1;
+	bool m_Unk19 : 1;
+	bool m_Unk20 : 1;
+	bool m_Unk21 : 1;
+	bool m_Unk22 : 1;
+	bool m_Unk23 : 1;
+	bool m_Unk24 : 1;
+	bool m_Unk25 : 1;
+	bool m_Unk26 : 1;
+	bool m_Unk27 : 1;
+	bool m_Unk28 : 1;
+	bool m_Unk29 : 1;
+	bool m_Unk30 : 1;
+	bool m_Unk31 : 1;
 };
 
 struct CPhysical

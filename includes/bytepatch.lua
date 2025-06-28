@@ -1,7 +1,7 @@
 local ffi = require("ffi")
 local type = type
 
-bytepatch = {}
+BytePatch = {}
 
 local patches = {}
 
@@ -10,11 +10,11 @@ local patches = {}
 ---@param name string Name of the patch
 ---@param address integer|ffi.cdata*
 ---@param bytes table Table of bytes. Ex: `{0x90, 0x90}`
-function bytepatch.add(name, address, bytes)
-	if not istable(bytes) then print_stacktrace("bad argument 'bytes' for 'bytepatch.add'.\nExpected table got " .. type(bytes) .. "\nIn:") return end
+function BytePatch.Add(name, address, bytes)
+	if not istable(bytes) then PrintStacktrace("bad argument 'bytes' for 'bytepatch.add'.\nExpected table got " .. type(bytes) .. "\nIn:") return end
 
 	-- Revert the old patch
-	bytepatch.remove(name)
+	BytePatch.Remove(name)
 
 	address = ffi.cast("uint8_t*", address)
 
@@ -32,7 +32,7 @@ end
 
 ---@param name string Name of the patch
 ---@return boolean found Returns true if the requested patch existed end was removed.
-function bytepatch.remove(name)
+function BytePatch.Remove(name)
 	local patch = patches[name]
 	if patch then
 		for i = 1, #patch.m_og_bytes do
@@ -49,14 +49,14 @@ end
 ---@param name string Name of the patch
 ---@param address integer|ffi.cdata*
 ---@param num_instructions integer How many instructions you want to nop.
-function bytepatch.nop(name, address, num_instructions)
+function BytePatch.Nop(name, address, num_instructions)
 	local patch_array = {}
 	for i = 1, num_instructions do
 		patch_array[i] = 0x90
 	end
-	bytepatch.add(name, address, patch_array)
+	BytePatch.Add(name, address, patch_array)
 end
 
-function bytepatch.get_table()
+function BytePatch.GetTable()
 	return patches
 end
