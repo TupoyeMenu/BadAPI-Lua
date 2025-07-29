@@ -103,7 +103,7 @@ end
 ---@param apply boolean|nil Applies the all hooks register without this argument, as well as this one.
 ---@return ffi.cdata*|nil original Original function, you may want to call this in your callback.
 ---@return table|nil detour Table for the detour_hook you just registered.
-function DetourHook.register(name, address, function_declaration, callback, apply)
+function DetourHook.Register(name, address, function_declaration, callback, apply)
 	local detour = DetourHook.GetHookByName(name)
 	if detour ~= nil then -- Remove the old hook
 		detour:__gc()
@@ -129,7 +129,7 @@ end
 ---@param apply boolean|nil Applies the all hooks register without this argument, as well as this one.
 ---@return ffi.cdata*|nil original Original function, you may want to call this in your callback.
 ---@return table|nil detour Table for the detour_hook you just registered.
-function DetourHook.register_by_pattern(name, pattern, module, function_declaration, callback, apply)
+function DetourHook.RegisterByPattern(name, pattern, module, function_declaration, callback, apply)
 
 	local detour = DetourHook.GetHookByName(name)
 	if detour ~= nil then -- Remove the old hook

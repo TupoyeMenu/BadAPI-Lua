@@ -44,7 +44,7 @@ end
 ---@param color integer Blip color to search for, set to -1 to ignore.
 ---@return boolean success
 function Teleport.ToBlip(sprite, color)
-	local result, location = blip.get_location(sprite, color)
+	local result, location = Blip.GetLocation(sprite, color)
 	
 	if result then
 		Entity.LoadGroundAt3dcoords(location)
