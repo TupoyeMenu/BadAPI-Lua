@@ -30,7 +30,7 @@ end)
 Command.Add("print", function(player_id, args)
 	local string_to_print = ""
 	for i = 2, #args do
-		if(i == 2) then
+		if (i == 2) then
 			string_to_print = args[i]
 		else
 			string_to_print = string_to_print .. "	" .. args[i]
@@ -48,7 +48,7 @@ Command.Add("help", function(player_id, args)
 		local commands = Command.GetTable()
 		local command = commands[args[2]]
 		if command then
-			log.info(tostring(command.help_text))
+			log.info(command:GetHelpText())
 		else
 			log.warning("Command " .. tostring(args[2]) .. " not found")
 		end
@@ -61,7 +61,7 @@ Command.Add("alias", function(player_id, args)
 	local alias_name = args[2]
 	local aliesed_command = args[3]
 	if alias_name and aliesed_command then
-		Command.Add(alias_name, function (player_id, _)
+		Command.Add(alias_name, function(player_id, _)
 			Command.Call(player_id, aliesed_command, true)
 		end)
 	else
@@ -75,7 +75,8 @@ Command.Add("dump_log_info", function(player_id, args)
 	LogTable(messages)
 end)
 
-local spawn_in_vehicle = ConVar.Add("spawn_in_vehicle", "1", "Teleports you into the vehicle that was spawned with `spawn`", {ARCHIVE=true, LOCAL_ONLY=true})
+local spawn_in_vehicle = ConVar.Add("spawn_in_vehicle", "1",
+	"Teleports you into the vehicle that was spawned with `spawn`", { ARCHIVE = true, LOCAL_ONLY = true })
 
 local function spawn_complition(args)
 	local vehicle_models = Vehicle.GetAllVehicleModels()
@@ -84,7 +85,7 @@ local function spawn_complition(args)
 	local results = {}
 	for key, value in ipairs(vehicle_models) do
 		if string.startswith(value, args[2]) then
-			results[#results+1] = value
+			results[#results + 1] = value
 		end
 	end
 	return results
@@ -96,9 +97,9 @@ Command.Add("spawn", function(player_id, args)
 		local ped = Ped:new(ped_handle)
 		if not ped:IsValid() then return end
 
-		local veh = Vehicle.Spawn{name=args[2], location=ped:GetPosition(), is_networked=true}
+		local veh = Vehicle.Spawn { name = args[2], location = ped:GetPosition(), is_networked = true }
 
-		if spawn_in_vehicle and tobool(spawn_in_vehicle.value) and veh then
+		if spawn_in_vehicle:GetBool() and veh then
 			ped:SetIntoVehicle(veh, -1)
 		end
 	end)
@@ -157,7 +158,7 @@ Command.Add("delete_veh", function(player_id, args)
 		if veh == nil then return end
 
 		TASK.CLEAR_PED_TASKS_IMMEDIATELY(ped_handle)
-		
+
 		if veh:TakeControlOf() then
 			veh:Delete()
 		end
@@ -187,7 +188,7 @@ Command.Add("god", function(player_id, args)
 			log.info("God OFF")
 		end
 	end
-end, nil, "Makes you invincible", {LOCAL_ONLY=true})
+end, nil, "Makes you invincible", { LOCAL_ONLY = true })
 
 Command.Add("kill", function(player_id, args)
 	script.run_in_fiber(function()
@@ -198,7 +199,7 @@ Command.Add("kill", function(player_id, args)
 			ENTITY.SET_ENTITY_HEALTH(player_ped, 0, 0, 0)
 		end
 	end)
-end, nil, "Kills you instantly", {LOCAL_ONLY=true})
+end, nil, "Kills you instantly", { LOCAL_ONLY = true })
 
 Command.Add("toggle_black_screen", function(player_id, args)
 	script.run_in_fiber(function()
@@ -208,4 +209,4 @@ Command.Add("toggle_black_screen", function(player_id, args)
 			CAM.DO_SCREEN_FADE_OUT(0)
 		end
 	end)
-end, nil, "Blacks out your screen and stops the game from rendering the world", {LOCAL_ONLY=true})
+end, nil, "Blacks out your screen and stops the game from rendering the world", { LOCAL_ONLY = true })

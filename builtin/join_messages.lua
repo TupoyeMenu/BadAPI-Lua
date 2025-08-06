@@ -1,3 +1,5 @@
+local ffi = require("ffi")
+
 local player_join_msg = ConVar.Add("player_join_msg", "1",
 	"Shows a '{} joined.' message above the minimap when a player joines.", { LOCAL_ONLY = true })
 
@@ -9,7 +11,7 @@ event.register_handler("PlayerJoin", "MinimapJoinMessage", function(name, id, ne
 		.. " with Rockstar ID: " .. tostring(player_handle.m_RockstarId))
 
 
-	if tobool(player_join_msg.value) then
+	if player_join_msg:GetBool() then
 		script.run_in_fiber(function()
 			Notify.AboveMap("<C>" .. name .. "</C> joined.")
 		end)

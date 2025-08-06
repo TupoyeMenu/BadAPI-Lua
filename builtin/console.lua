@@ -27,8 +27,8 @@ local function get_suggestions(text, missing_only)
 		end
 	elseif #args > 1 then
 		local command = command_table[args[1]]
-		if command and command.complition_callback then
-			results = command.complition_callback(args)
+		if command and command.m_complition_callback then
+			results = command.m_complition_callback(args)
 			has_complitions = true
 		end
 	end

@@ -109,7 +109,7 @@ end, nil, nil, {LOCAL_ONLY=true})
 local log_damage_events = ConVar.Add("log_damage_events", "0", nil, {LOCAL_ONLY=true})
 
 event.register_handler("ReceiveNetGameEvent", "ReceiveNetGameEventTest", function (ply, event_id, event_index, event_handled_bits, event_buffer)
-	if tobool(log_damage_events.value) and event_id == 6 then
+	if log_damage_events:GetBool() and event_id == 6 then
 		log.debug("Weapon damage event triggered")
 	end
 end)
