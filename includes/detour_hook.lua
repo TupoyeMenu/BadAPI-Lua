@@ -19,10 +19,11 @@ DetourHook = {
 ---@param name string Name of the hook, must be unique.
 ---@param target ffi.cdata* Addres of the function to hook.
 ---@param detour ffi.cdata* Your callback function.
+---@return detour_hook
 function DetourHook:new(name, target, detour)
-	if not isstring(name) then PrintStacktrace("bad argument 'name' for 'detour_hook:new'.\nExpected string got " .. type(name) .. "\nIn:") return end
-	if type(target) ~= "cdata" then PrintStacktrace("bad argument 'name' for 'detour_hook:new'.\nExpected cdata got " .. type(target) .. "\nIn:") return end
-	if type(detour) ~= "cdata" then PrintStacktrace("bad argument 'name' for 'detour_hook:new'.\nExpected cdata got " .. type(detour) .. "\nIn:") return end
+	assert(isstring(name), "bad argument 'name' for 'detour_hook:new'.\nExpected string got " .. type(name) .. "\nIn:")
+	assert(type(target) == "cdata", "bad argument 'name' for 'detour_hook:new'.\nExpected cdata got " .. type(target) .. "\nIn:")
+	assert(type(detour) == "cdata", "bad argument 'name' for 'detour_hook:new'.\nExpected cdata got " .. type(detour) .. "\nIn:")
 
 	o = {}
 	setmetatable(o, self)

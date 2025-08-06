@@ -11,7 +11,7 @@ local patches = {}
 ---@param address integer|ffi.cdata*
 ---@param bytes table Table of bytes. Ex: `{0x90, 0x90}`
 function BytePatch.Add(name, address, bytes)
-	if not istable(bytes) then PrintStacktrace("bad argument 'bytes' for 'bytepatch.add'.\nExpected table got " .. type(bytes) .. "\nIn:") return end
+	assert(istable(bytes), "bad argument 'bytes' for 'bytepatch.add'.\nExpected table got " .. type(bytes) .. "\nIn:")
 
 	-- Revert the old patch
 	BytePatch.Remove(name)

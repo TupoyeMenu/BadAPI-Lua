@@ -30,17 +30,21 @@ local default_convar_flags =
 ---@param complition_callback function?
 ---@param help_text string?
 ---@param flags command_flags?
----@return table? command
+---@return table command
 function Command.Add(name, callback, complition_callback, help_text, flags)
-	if not isstring(name) then PrintStacktrace("bad argument 'name' for 'command.add'.\nExpected string got " .. type(name) .. "\nIn:") return end
-	if not isfunction(callback) then PrintStacktrace("bad argument 'callback' for 'command.add'.\nExpected function got " .. type(callback) .. "\nIn:") return end
-	if complition_callback ~= nil and not isfunction(complition_callback) then PrintStacktrace("bad argument 'complition_callback' for 'command.add'.\nExpected function got " .. type(complition_callback) .. "\nIn:") return end
-	if help_text ~= nil and not isstring(help_text) then PrintStacktrace("bad argument 'help_text' for 'command.add'.\nExpected string got " .. type(help_text) .. "\nIn:") return end
-	if flags ~= nil and not istable(flags) then PrintStacktrace("bad argument 'flags' for 'command.add'.\nExpected table got " .. type(flags) .. "\nIn:") return end
-
-	if flags == nil then
-		flags = {}
+	assert(isstring(name), "bad argument 'name' for 'Command.Add'.\nExpected string got " .. type(name) .. "\nIn:")
+	assert(isfunction(callback), "bad argument 'callback' for 'command.Add'.\nExpected function got " .. type(callback) .. "\nIn:")
+	if complition_callback ~= nil then
+		assert(isfunction(complition_callback), "bad argument 'complition_callback' for 'Command.Add'.\nExpected function got " .. type(complition_callback) .. "\nIn:")
 	end
+	if help_text ~= nil then
+		assert(isstring(help_text), "bad argument 'help_text' for 'Command.Add'.\nExpected string got " .. type(help_text) .. "\nIn:")
+	end
+	if flags ~= nil then
+		assert(istable(flags), "bad argument 'flags' for 'Command.Add'.\nExpected table got " .. type(flags) .. "\nIn:")
+	end
+
+	flags = flags or {}
 
 	commands[name] = {
 		callback = callback,
@@ -109,16 +113,18 @@ end
 ---@param default_value string
 ---@param help_text string?
 ---@param flags command_flags?
----@return table? convar
+---@return table convar
 function ConVar.Add(name, default_value, help_text, flags)
-	if not isstring(name) then PrintStacktrace("bad argument 'name' for 'convar.add'.\nExpected string got " .. type(name) .. "\nIn:") return end
-	if not isstring(default_value) then PrintStacktrace("bad argument 'default_value' for 'convar.add'.\nExpected string got " .. type(default_value) .. "\nIn:") return end
-	if help_text ~= nil and not isstring(help_text) then PrintStacktrace("bad argument 'help_text' for 'convar.add'.\nExpected string got " .. type(help_text) .. "\nIn:") return end
-	if flags ~= nil and not istable(flags) then PrintStacktrace("bad argument 'flags' for 'convar.add'.\nExpected table got " .. type(flags) .. "\nIn:") return end
-
-	if flags == nil then
-		flags = default_convar_flags
+	assert(isstring(name), "bad argument 'name' for 'ConVar.Add'.\nExpected string got " .. type(name) .. "\nIn:")
+	assert(isstring(default_value), "bad argument 'default_value' for 'ConVar.Add'.\nExpected string got " .. type(default_value) .. "\nIn:")
+	if help_text ~= nil then
+		assert(isstring(help_text), "bad argument 'help_text' for 'ConVar.Add'.\nExpected string got " .. type(help_text) .. "\nIn:")
 	end
+	if flags ~= nil then
+		assert(istable(flags), "bad argument 'flags' for 'ConVar.Add'.\nExpected table got " .. type(flags) .. "\nIn:")
+	end
+
+	flags = flags or default_convar_flags
 
 	commands[name] = {
 		callback = ConVarCallback,
@@ -168,8 +174,8 @@ end
 ---@param hide_input? boolean Don't show that we ran the command in the console
 ---@return boolean success
 function Command.Call(player_id, cmd, hide_input)
-	if not isnumber(player_id) then PrintStacktrace("bad argument 'player_id' for 'command.call'.\nExpected number got " .. type(player_id) .. "\nIn:") return false end
-	if not isstring(cmd) then PrintStacktrace("bad argument 'command' for 'command.call'.\nExpected string got " .. type(cmd) .. "\nIn:") return false end
+	assert(isnumber(player_id), "bad argument 'player_id' for 'Command.Call'.\nExpected number got " .. type(player_id) .. "\nIn:")
+	assert(isstring(cmd), "bad argument 'command' for 'Command.Call'.\nExpected string got " .. type(cmd) .. "\nIn:")
 
 	if not hide_input then
 		log_info("> " .. cmd)
