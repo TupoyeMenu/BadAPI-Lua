@@ -8,7 +8,7 @@ Player = {}
 ---@param p integer|ffi.cdata* Pointer to CNetGamePlayer or player index
 ---@return player?
 function Player:new(p)
-	o = {}
+	local o = {}
 	local net_player
 	if type(p) == "number" and p <= 32 then
 		net_player = Player.GetNetPlayerFromPid(p)

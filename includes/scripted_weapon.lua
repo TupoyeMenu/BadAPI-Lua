@@ -12,7 +12,7 @@ ScriptedWeapon = {}
 function ScriptedWeapon:new(hash)
 	assert(isnumber(hash))
 
-	o = {}
+	local o = {}
 	o.m_Hash = hash
 	o.m_OwnerPed = PLAYER.PLAYER_PED_ID()
 

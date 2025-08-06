@@ -6,7 +6,7 @@ function Packet:new()
 	local data = ffi.new("char[0x400]")
 	buf.m_data = data
 	buf.m_maxBit = 0x400*8
-	o = {
+	local o = {
 		m_Data = data,
 		m_Buffer = buf
 	}

@@ -25,7 +25,7 @@ function DetourHook:new(name, target, detour)
 	assert(type(target) == "cdata", "bad argument 'name' for 'detour_hook:new'.\nExpected cdata got " .. type(target) .. "\nIn:")
 	assert(type(detour) == "cdata", "bad argument 'name' for 'detour_hook:new'.\nExpected cdata got " .. type(detour) .. "\nIn:")
 
-	o = {}
+	local o = {}
 	setmetatable(o, self)
 	self.__index = self
 	o.m_name = name

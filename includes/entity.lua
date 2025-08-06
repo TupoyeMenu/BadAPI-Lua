@@ -16,7 +16,7 @@ function Entity:new(p)
 
 	---@type Entity
 	---@diagnostic disable-next-line: missing-fields
-	o = {}
+	local o = {}
 
 	if type(p) == "number" then
 		o.m_Handle = p
