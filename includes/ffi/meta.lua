@@ -43,6 +43,55 @@ ffi.metatype("fvector3", {
 		return result
 	end,
 })
+local fvector4 = ffi.typeof("fvector4")
+ffi.metatype("fvector4", {
+	__add = function (a, b)
+		local result = fvector4()
+		result.x = a.x + b.x
+		result.y = a.y + b.y
+		result.z = a.z + b.z
+		result.w = a.w + b.w
+		return result
+	end,
+	__sub = function (a, b)
+		local result = fvector4()
+		result.x = a.x - b.x
+		result.y = a.y - b.y
+		result.z = a.z - b.z
+		result.w = a.w - b.w
+		return result
+	end,
+	__mul = function (a, b)
+		local result = fvector4()
+		if isnumber(b) then
+			result.x = a.x * b
+			result.y = a.y * b
+			result.z = a.z * b
+			result.w = a.w * b
+		else
+			result.x = a.x * b.x
+			result.y = a.y * b.y
+			result.z = a.z * b.z
+			result.w = a.w * b.w
+		end
+		return result
+	end,
+	__div = function (a, b)
+		local result = fvector4()
+		if isnumber(b) then
+			result.x = a.x / b
+			result.y = a.y / b
+			result.z = a.z / b
+			result.w = a.w / b
+		else
+			result.x = a.x / b.x
+			result.y = a.y / b.y
+			result.z = a.z / b.z
+			result.w = a.w / b.w
+		end
+		return result
+	end,
+})
 
 
 local address

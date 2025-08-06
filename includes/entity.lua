@@ -108,6 +108,19 @@ function Entity:IsMissionEntity()
 	return ENTITY.IS_ENTITY_A_MISSION_ENTITY(self.m_Handle)
 end
 
+---@param script_ent boolean?
+---@param steal_from_other_script boolean?
+function Entity:SetAsMissionEntity(script_ent, steal_from_other_script)
+	script_ent = script_ent or true
+	steal_from_other_script = steal_from_other_script or false
+
+	ENTITY.SET_ENTITY_AS_MISSION_ENTITY(self.m_Handle, script_ent, steal_from_other_script)
+end
+
+function Entity:SetAsNoLongerNeeded()
+	ENTITY.SET_ENTITY_AS_NO_LONGER_NEEDED(self.m_Handle)
+end
+
 ---@return integer
 function Entity:GetModel()
 	self:AssertValid()
@@ -135,6 +148,12 @@ end
 function Entity:GetRotation(order)
 	self:AssertValid()
 	return ENTITY.GET_ENTITY_ROTATION(self.m_Handle, order)
+end
+
+---@return vec3
+function Entity:GetDirection()
+	self:AssertValid()
+	return math.rotation_to_direction(self:GetRotation(0))
 end
 
 ---@param order integer
@@ -196,6 +215,21 @@ function Entity:IsFrozen()
 	return self.m_Pointer.m_Flags.m_Frozen
 end
 
+---@param enabled boolean
+function Entity:SetDynamic(enabled)
+	self:AssertValid()
+	ENTITY.SET_ENTITY_DYNAMIC(self.m_Handle, enabled)
+end
+
+function Entity:ActivatePhysics()
+	PHYSICS.ACTIVATE_PHYSICS(self.m_Handle)
+end
+
+---@return boolean
+function Entity:HasPhysics()
+	return ENTITY.DOES_ENTITY_HAVE_PHYSICS(self.m_Handle)
+end
+
 ---@return ffi.cdata*?
 function Entity:GetNetworkObject()
 	self:AssertValid()
@@ -213,12 +247,13 @@ end
 function Entity:Delete()
 	self:AssertValid()
 
-	if self:IsNetworked() then
-		log.fatal("Deleting networked entities is not implemented!")
+	if self:IsNetworked() and not self:HasControl() then
+		-- This may cause issues anyway, since players can be in the vehicle.
+		log.fatal("Deleting networked entities without control is not implemented!")
 		return false
 	else
-		if not ENTITY.IS_ENTITY_A_MISSION_ENTITY(self.m_Handle) then
-			ENTITY.SET_ENTITY_AS_MISSION_ENTITY(self.m_Handle, true, true)
+		if not self:IsMissionEntity() then
+			self:SetAsMissionEntity(true, true)
 		end
 		ENTITY.DELETE_ENTITY(self.m_Handle) -- FIXME, this may not work if the entity does not belong to our script
 		return true

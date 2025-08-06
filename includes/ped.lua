@@ -12,9 +12,25 @@ function Ped:new(p)
 	return real_new(self, p)
 end
 
----@param args table
+---@class PedSpawn
+---@field name string? Model name, either this or `hash` has to be set.
+---@field hash integer? Model hash, either this or `name` has to be set.
+---@field location vec3? Spawn position, either this or `x`, `y`, `z` has to be set.
+---@field x number? Spawn position, either this or `location` has to be set.
+---@field y number? Spawn position, either this or `location` has to be set.
+---@field z number? Spawn position, either this or `location` has to be set.
+---@field is_networked boolean?
+---@field is_script_ent boolean?
+---@field heading number?
+---@field no_longer_needed boolean? Set the **model** as no longer needed.
+---@field vehicle Vehicle? If set, the ped will spawn inside this vehicle.
+---@field seat integer?
+---@field ped_type integer?
+
+
+---@param args PedSpawn
 function Ped.Spawn(args)
-		if isstring(args.name) then
+	if isstring(args.name) then
 		args.hash = joaat(args.name)
 	end
 
@@ -30,7 +46,16 @@ function Ped.Spawn(args)
 		args.is_networked = false
 	end
 
-	local ped_handle = PED.CREATE_PED(0, args.hash, args.location.x, args.location.y, args.location.z, args.heading, args.is_networked, args.is_script_ent)
+	args.ped_type = args.ped_type or 0
+	args.seat = args.seat or -1
+	local spawn_in_vehicle = args.vehicle and istable(args.vehicle)
+
+	local ped_handle
+	if spawn_in_vehicle then
+		ped_handle = PED.CREATE_PED_INSIDE_VEHICLE(args.vehicle:GetHandle(), args.ped_type, args.hash, args.seat, args.is_networked, args.is_script_ent)
+	else
+		ped_handle = PED.CREATE_PED(args.ped_type, args.hash, args.location.x, args.location.y, args.location.z, args.heading, args.is_networked, args.is_script_ent)
+	end
 	local ped = Ped:new(ped_handle)
 	if not ped:IsValid() then return nil end
 
@@ -38,7 +63,9 @@ function Ped.Spawn(args)
 		STREAMING.SET_MODEL_AS_NO_LONGER_NEEDED(args.hash)
 	end
 
-	ped:SetPosition(args.location)
+	if not spawn_in_vehicle then
+		ped:SetPosition(args.location)
+	end
 
 	return ped
 end
@@ -193,4 +220,25 @@ end
 function Ped:SetMaxAmmoForWeapon(hash)
 	local _, maxAmmo = WEAPON.GET_MAX_AMMO(self.m_Handle, hash, 0)
 	WEAPON.SET_PED_AMMO(self.m_Handle, hash, maxAmmo, false)
+end
+
+---@param hash integer
+function Ped:SetRelationshipGroupHash(hash)
+	PED.SET_PED_RELATIONSHIP_GROUP_HASH(self.m_Handle, hash)
+end
+
+---@param range number
+function Ped:SetHearingRange(range)
+	PED.SET_PED_HEARING_RANGE(self.m_Handle, range)
+end
+
+---@param attribute integer
+---@param enabled boolean
+function Ped:SetCombatAttribute(attribute, enabled)
+	PED.SET_PED_COMBAT_ATTRIBUTES(self.m_Handle, attribute, enabled)
+end
+
+---@param pattern_hash integer
+function Ped:SetFiringPattern(pattern_hash)
+	PED.SET_PED_FIRING_PATTERN(self.m_Handle, pattern_hash)
 end

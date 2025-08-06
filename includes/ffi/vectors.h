@@ -24,9 +24,6 @@ typedef union
 	float data[4][4];
 	struct
 	{
-		struct
-		{
-			float x, y, z, w;
-		} rows[4];
+		fvector4 rows[4];
 	};
 } fmatrix44;

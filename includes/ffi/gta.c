@@ -137,9 +137,9 @@ struct fwEntity
 	uint16_t gap38; //0x0038
 	uint16_t gap3A; //0x003A
 	uint32_t gap3C; //0x003C
-	uint64_t* m_DynamicEntityComponent; //0x0040 (stores attachments and stuff)
+	struct fwDynamicEntityComponent* gap40; //0x0040 (stores attachments and stuff)
 	uint64_t* m_DrawData; //0x0048
-	uint64_t* gap50; //0x0050
+	struct fwDynamicEntityComponent* m_DynamicEntityComponent; //0x0050
 	uint64_t gap58; //0x0058
 	fmatrix44 m_Transform; //0x0060
 	struct fwEntity* m_RenderFocusEntity; //0x00A0
@@ -1150,3 +1150,73 @@ struct netEventFrameReceived
 	uint32_t m_Length;
 	void* m_Data;
 };
+
+
+// Everything in this region is pasted from an old version of rageAm by ranstar74.
+// All rights violated.
+#pragma region Textures
+
+struct grcTexture
+{
+	struct {
+		void (*Destructor)(void*_this);
+		void (*Unk1)(void*_this);
+		void (*Unk2)(void*_this);
+		void (*Unk3)(void*_this);
+		void (*Unk4)(void*_this);
+		uint16_t (*GetWidth)(void*_this);
+		uint16_t (*GetHeight)(void*_this);
+		uint16_t (*GetDepth)(void*_this);
+		uint8_t (*GetMipLevels)(void*_this);
+		void (*Unk9)(void*_this);
+		uint8_t (*GetBitsPerPixel)(void*_this);
+		void (*Unk11)(void*_this);
+		void (*Unk12)(void*_this);
+		void (*Unk13)(void*_this);
+		void (*Unk14)(void*_this);
+		void (*Unk15)(void*_this);
+		void (*Unk16)(void*_this);
+		void (*Unk17)(void*_this);
+		void (*Unk18)(void*_this);
+		void (*Unk19)(void*_this);
+		void (*Unk20)(void*_this);
+		void (*Unk21)(void*_this);
+		void* (*GetShaderResourceView)(void*_this); // ID3D11ShaderResourceView*
+		void (*Unk23)(void*_this);
+		void (*Unk24)(void*_this);
+		void (*Unk25)(void*_this);
+		void (*Unk26)(void*_this);
+		void (*Unk27)(void*_this);
+		void (*Unk28)(void*_this);
+		void (*Unk29)(void*_this);
+		void (*Unk30)(void*_this);
+		void (*Unk31)(void*_this);
+		void (*Unk32)(void*_this);
+		void (*Unk33)(void*_this);
+		void (*Unk34)(void*_this);
+		void (*Unk35)(void*_this);
+		void (*Unk36)(void*_this);
+		void (*Unk37)(void*_this);
+		void (*Unk38)(void*_this);
+		void (*Unk39)(void*_this);
+		void (*Unk40)(void*_this);
+		void (*Unk41)(void*_this);
+		void (*Unk42)(void*_this);
+		void (*Unk43)(void*_this);
+		void (*Unk44)(void*_this);
+		void (*Unk45)(void*_this);
+		void (*Unk46)(void*_this);
+	} *vtable;
+
+	char m_Pad1[0x18];
+	const char* m_Name;
+	int16_t word30;
+	int8_t byte32;
+	uint8_t m_ArraySize;
+	int32_t dword34;
+	void* m_Resource; // ID3D11Resource*
+	int32_t dword40;
+	int32_t dword44;
+};
+
+#pragma endregion

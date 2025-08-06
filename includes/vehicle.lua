@@ -24,8 +24,21 @@ function Vehicle:SetMPBitset(is_stolen)
 	VEHICLE.SET_VEHICLE_IS_STOLEN(self.m_Handle, is_stolen)
 end
 
+---@class VehicleSpawn
+---@field name string? Model name, either this or `hash` has to be set.
+---@field hash integer? Model hash, either this or `name` has to be set.
+---@field location vec3? Spawn position, either this or `x`, `y`, `z` has to be set.
+---@field x number? Spawn position, either this or `location` has to be set.
+---@field y number? Spawn position, either this or `location` has to be set.
+---@field z number? Spawn position, either this or `location` has to be set.
+---@field is_networked boolean?
+---@field is_stolen boolean?
+---@field is_script_ent boolean?
+---@field heading number?
+---@field no_longer_needed boolean? Set the **model** as no longer needed.
+
 ---Spawns a vehicle
----@param args table
+---@param args VehicleSpawn
 ---@return Vehicle|nil vehicle_handle
 function Vehicle.Spawn(args)
 	if isstring(args.name) then
@@ -297,6 +310,60 @@ end
 ---@param lower boolean
 function Vehicle:LowerStance(lower)
 	VEHICLE.SET_REDUCED_SUSPENSION_FORCE(self.m_Handle, lower)
+end
+
+---@return number
+function Vehicle:GetBodyHealth()
+	return VEHICLE.GET_VEHICLE_BODY_HEALTH(self.m_Handle)
+end
+
+---@param value number
+function Vehicle:SetBodyHealth(value)
+	VEHICLE.SET_VEHICLE_BODY_HEALTH(self.m_Handle, value)
+end
+
+---@return number
+function Vehicle:GetPetrolTankHealth()
+	return VEHICLE.GET_VEHICLE_PETROL_TANK_HEALTH(self.m_Handle)
+end
+
+---@param value number
+function Vehicle:SetPetrolTankHealth(value)
+	VEHICLE.SET_VEHICLE_PETROL_TANK_HEALTH(self.m_Handle, value)
+end
+
+---@return number
+function Vehicle:GetEngineHealth()
+	return VEHICLE.GET_VEHICLE_ENGINE_HEALTH(self.m_Handle)
+end
+
+---@param value number
+function Vehicle:SetEngineHealth(value)
+	VEHICLE.SET_VEHICLE_ENGINE_HEALTH(self.m_Handle, value)
+end
+
+---@param value number
+function Vehicle:SetPlaneEngineHealth(value)
+	VEHICLE.SET_PLANE_ENGINE_HEALTH(self.m_Handle, value)
+end
+
+---@return boolean
+function Vehicle:GetVehicleHasLangingGear()
+	return VEHICLE.GET_VEHICLE_HAS_LANDING_GEAR(self.m_Handle)
+end
+
+---@return integer state
+function Vehicle:GetLangingGearState()
+	return VEHICLE.GET_LANDING_GEAR_STATE(self.m_Handle)
+end
+
+---@param state integer
+function Vehicle:SetLangingGearState(state)
+	VEHICLE.CONTROL_LANDING_GEAR(self.m_Handle, state)
+end
+
+function Vehicle:GetDisplayName()
+	return VEHICLE.GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(self:GetModel())
 end
 
 function Vehicle.GetFullNameFromModel(model)

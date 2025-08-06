@@ -115,6 +115,42 @@ event.register_handler("ReceiveNetGameEvent", "ReceiveNetGameEventTest", functio
 end)
 
 
+--function fs_print(path)
+--	for index, value in ipairs(packfile.get_files(path)) do
+--		log.debug(value.fileName)
+--	end
+--end
+
+--event.register_handler("EntityDeleted", "DeleteTest",	function (handle, ptr)
+--	log.debug("EntityDeleted: " .. handle .. " " .. ptr)
+--end)
+
+--[[
+local get_screen_texture = ffi.cast("struct grcTexture* (*)(int)", 0x140558bc4ULL)
+event.register_handler("Draw", "ImageTest", function ()
+	if ImGui.Begin("Texture test") then
+		local screen_texture = ffi.cast("struct grcTexture**", 0x14232c4d8ULL)[0] --get_screen_texture(0)
+		if screen_texture ~= nil then
+			local view = screen_texture.vtable.GetShaderResourceView(screen_texture)
+			local width = screen_texture.vtable.GetWidth(screen_texture)
+			--local height = screen_texture.vtable.GetHeight(screen_texture)
+			--local depth = screen_texture.vtable.GetDepth(screen_texture)
+			if screen_texture.m_Name ~= nil then
+				ImGui.Text(tostring(screen_texture.m_Name))
+			end
+			menu_exports.imgui_text("width: " .. tostring(width))
+			menu_exports.imgui_text("height: " .. tostring(height))
+			menu_exports.imgui_text("depth: " .. tostring(depth))
+			menu_exports.imgui_text("view: " .. tostring(view))
+			if view ~= nil then
+				--menu_exports.imgui_image(view, width, height, 0,0, 1,1)
+			end
+		end
+	end
+	ImGui.End()
+end)
+]]
+
 --[[
 local ffi = require("ffi")
 
