@@ -177,8 +177,7 @@ end, nil, "Deletes all vehicles on the map.")
 
 
 Command.Add("god", function(player_id, args)
-	local player_ped_handle = self.get_ped()
-	local ped = Ped:new(player_ped_handle)
+	local ped = Self.Ped
 	if ped:IsValid() then
 		if not ped:IsInvincible() then
 			ped:SetInvincible(true)
@@ -195,7 +194,7 @@ Command.Add("kill", function(player_id, args)
 		local player_ped = PLAYER.GET_PLAYER_PED_SCRIPT_INDEX(player_id)
 		if not ENTITY.DOES_ENTITY_EXIST(player_ped) then return end
 
-		if player_ped == self.get_ped() then
+		if player_ped == Self.PedId then
 			ENTITY.SET_ENTITY_HEALTH(player_ped, 0, 0, 0)
 		end
 	end)

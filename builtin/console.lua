@@ -202,7 +202,7 @@ event.register_handler(menu_event.Draw, "Console", function()
 			if #command_buffer > 0 then -- Don't insert empty strings to history
 				add_to_history(command_buffer)
 			end
-			Command.Call(self.get_id(), command_buffer)
+			Command.Call(Self.Id, command_buffer)
 			command_buffer = ""
 			should_set_focus = true
 		end

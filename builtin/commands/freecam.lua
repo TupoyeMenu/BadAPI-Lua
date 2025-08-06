@@ -97,7 +97,7 @@ function freecam.on_tick()
 
 
 	if freecam.moves_player then
-		local ped = self.get_ped()
+		local ped = Self.PedId
 		local veh = PED.GET_VEHICLE_PED_IS_IN(ped, true)
 		freecam.entity = PED.IS_PED_IN_ANY_VEHICLE(ped, true) and veh or ped
 		ENTITY.FREEZE_ENTITY_POSITION(freecam.entity, true)

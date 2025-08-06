@@ -11,6 +11,7 @@ require("includes.common")
 require("includes.ffi_init")
 require("includes.detour_hook")
 require("includes.packet")
+require("includes.self")
 require("includes.player")
 require("includes.notify")
 require("includes.raycast")
@@ -19,8 +20,6 @@ require("includes.enums.wndproc")
 require("includes.enums.pad")
 require("includes.enums.blips")
 
--- ~~Actual modules~~
--- Not anymore
 require("includes.bytepatch")
 require("includes.command")
 require("includes.entity")

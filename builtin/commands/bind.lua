@@ -146,9 +146,9 @@ local function check_bind_keys(key_just_pressed, is_down)
 	for _, bind in ipairs(bind_table) do
 		if are_all_bind_keys_down(bind) then
 			if is_down and bind.down_command then
-				Command.Call(self.get_id(), bind.down_command, true)
+				Command.Call(Self.Id, bind.down_command, true)
 			elseif not is_down and bind.up_command and is_key_in_bind(bind, key_just_pressed) then
-				Command.Call(self.get_id(), bind.up_command, true)
+				Command.Call(Self.Id, bind.up_command, true)
 			end
 		end
 	end

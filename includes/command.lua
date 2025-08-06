@@ -148,7 +148,7 @@ local function LoadConfig(filename)
 
 	for line in cfg_file:lines() do
 		if not string.startswith(line, "//") and not string.startswith(line, "#") then
-			Command.Call(self.get_id(), line)
+			Command.Call(Self.Id, line)
 		end
 	end
 

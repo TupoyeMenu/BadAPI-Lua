@@ -53,7 +53,7 @@ end
 local last_weapon_hash = 0
 local just_switched = false
 script.register_looped("ScriptedWeaponsThink", function ()
-	local ped = Ped:new(self.get_ped())
+	local ped = Self.Ped
 
 	if last_weapon_hash ~= ped:GetCurrentWeapon() then
 		just_switched = true
