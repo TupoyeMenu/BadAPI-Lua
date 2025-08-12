@@ -18,6 +18,9 @@ You can also do key combinations like this `bind ctrl+i freecam`
 If a command you bound is prefixed with the `+` symbol, it will also call the same command with the `-` prefix.
 For example: `bind o "+test"` will call `+test` when you press `O`, and `-test` when you release it.
 
+If a bind is set to a key that is already used by GTAV, the key will be disabled for the game.
+For example if you `bind shift+ins toggle_gui`, you will not be able to sprint with shift, or change the camera using insert.
+
 
 ## Credits
 BadAPI-Lua has stolen code from the following projects:

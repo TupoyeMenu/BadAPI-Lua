@@ -86,6 +86,13 @@ key_name_to_wndproc =
 }
 
 bind = {}
+
+---@class bind
+---@field keys table<integer, integer>
+---@field down_command string
+---@field up_command string
+
+---@type table<integer, bind>
 local bind_table = {}
 
 Command.Add("bind", function(player_id, args)
@@ -161,5 +168,16 @@ event.register_handler(menu_event.Wndproc, "BindWndprocHook", function (hwnd, ms
 	elseif msg == WM_KEYUP then
 		check_bind_keys(wparam, false)
 		keys_down[wparam] = false
+	end
+end)
+
+script.register_looped("BindInputBlocker", function ()
+	for _, bind in ipairs(bind_table) do
+		for _, key in ipairs(bind.keys) do
+			local actions = Control.GetActionsUsingThisKey(key)
+			for _, action in ipairs(actions) do
+				PAD.DISABLE_CONTROL_ACTION(2, action, false)
+			end
+		end
 	end
 end)

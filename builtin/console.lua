@@ -79,12 +79,12 @@ function toggle_console()
 	console_open = not console_open
 	if console_open then
 		should_set_focus = true
-		if not gui.is_open() then
-			gui.override_mouse(true)
+		if not Gui.IsOpen() then
+			Gui.OverrideMouse(true)
 		end
 	else
-		if gui.mouse_override() then
-			gui.override_mouse(false)
+		if Gui.MouseOverride() then
+			Gui.OverrideMouse(false)
 		end
 	end
 end

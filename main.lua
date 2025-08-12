@@ -114,6 +114,20 @@ event.register_handler("ReceiveNetGameEvent", "ReceiveNetGameEventTest", functio
 	end
 end)
 
+local demo_window_cmd = ConVar.Add("imgui_demo", "0", "Should the ImGui Demo be drawn")
+local demo_window =
+{
+	IsOpen = function(self) return demo_window_cmd:GetBool() end,
+	SetOpen = function(self, open) demo_window_cmd:SetBool(open) end,
+
+	RenderCallback = function (self)
+		local open = ImGui.ShowDemoWindow(self:IsOpen())
+		self:SetOpen(open)
+	end
+}
+
+MenuBar.RegisterWindow("ImGui Demo", demo_window)
+
 
 --function fs_print(path)
 --	for index, value in ipairs(packfile.get_files(path)) do

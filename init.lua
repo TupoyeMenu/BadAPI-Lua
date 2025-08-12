@@ -22,6 +22,8 @@ require("includes.enums.blips")
 
 require("includes.bytepatch")
 require("includes.command")
+require("includes.gui")
+require("includes.menubar")
 require("includes.entity")
 require("includes.vehicle")
 require("includes.ped")

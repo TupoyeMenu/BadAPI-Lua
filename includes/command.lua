@@ -114,7 +114,7 @@ end
 
 ---@param player_id number Player that called this command
 ---@param cmd string The command as a string
----@param hide_input? boolean Don't show that we ran the command in the console
+---@param hide_input? boolean Don't show that we ran the command in the console. Default: false
 ---@return boolean success
 function Command.Call(player_id, cmd, hide_input)
 	assert(isnumber(player_id), "bad argument 'player_id' for 'Command.Call'.\nExpected number got " .. type(player_id) .. "\nIn:")

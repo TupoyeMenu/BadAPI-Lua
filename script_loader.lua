@@ -1,10 +1,13 @@
 
 local script_name = ""
 
-
-event.register_handler("Draw", "draw_script_loader", function()
-	if gui.is_open() then
-		if ImGui.Begin("Script loader") then
+---@type GuiWindow
+local script_loader_window =
+{
+	RenderCallback = function (window)
+		local open, res = ImGui.Begin("Script loader", true)
+		window:SetOpen(open)
+		if res then
 			local active
 			script_name, pressed = ImGui.InputText("Script name", script_name, 128, ImGuiInputTextFlags.EnterReturnsTrue)
 			if pressed then
@@ -17,5 +20,17 @@ event.register_handler("Draw", "draw_script_loader", function()
 			end
 		end
 		ImGui.End()
+	end,
+
+	is_open = false,
+	IsOpen = function (window)
+		return window.is_open
+	end,
+	SetOpen = function (window, open)
+		window.is_open = open
 	end
-end)
+
+}
+
+MenuBar.RegisterWindow("Script Loader", script_loader_window)
+
