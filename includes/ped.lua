@@ -199,6 +199,7 @@ function Ped:GetArmour()
 	return PED.GET_PED_ARMOUR(self.m_Handle)
 end
 
+---Max armor is always 100
 ---@param amount integer
 function Ped:SetArmour(amount)
 	PED.SET_PED_ARMOUR(self.m_Handle, amount)

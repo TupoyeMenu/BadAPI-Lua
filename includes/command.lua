@@ -210,12 +210,18 @@ end
 local function ConVarCallback(player_id, args)
 	local convar_name = args[1]
 
+	local command = commands[convar_name]
+
 	if args[2] == nil then
-		log_info(commands[convar_name].m_value)
+		log_info(command.m_value)
 		return
 	end
 
-	commands[convar_name].m_value = args[2]
+	if command.m_change_callback then
+		command.m_change_callback(args)
+	end
+
+	command.m_value = args[2]
 
 	-- Don't save if we have already saved in the last 5 seconds
 	if initial_config_loaded and os.time() - last_save_time > 5 then
@@ -224,7 +230,7 @@ local function ConVarCallback(player_id, args)
 end
 
 ---@private
-function ConVar:new(name, default_value, help_text, flags)
+function ConVar:new(name, default_value, help_text, flags, change_callback)
 	assert(isstring(name), "bad argument 'name' for 'ConVar.Add'.\nExpected string got " .. type(name) .. "\nIn:")
 	assert(isstring(default_value), "bad argument 'default_value' for 'ConVar.Add'.\nExpected string got " .. type(default_value) .. "\nIn:")
 	if help_text ~= nil then
@@ -232,6 +238,9 @@ function ConVar:new(name, default_value, help_text, flags)
 	end
 	if flags ~= nil then
 		assert(istable(flags), "bad argument 'flags' for 'ConVar.Add'.\nExpected table got " .. type(flags) .. "\nIn:")
+	end
+	if change_callback ~= nil then
+		assert(isfunction(change_callback), "bad argument 'change_callback' for 'ConVar.Add'.\nExpected function got " .. type(change_callback) .. "\nIn:")
 	end
 
 	flags = flags or default_convar_flags
@@ -242,6 +251,7 @@ function ConVar:new(name, default_value, help_text, flags)
 	self.__index = self
 
 	convar.m_callback = ConVarCallback
+	convar.m_change_callback = change_callback
 	convar.m_name = name
 	convar.m_help_text = help_text
 	convar.m_flags = flags
@@ -295,9 +305,10 @@ end
 ---@param default_value string
 ---@param help_text string?
 ---@param flags command_flags?
+---@param change_callback fun(args: table<integer, string>)? This will not be called when the value is modified through `SetBool`, `SetNumber`, `SetString`.
 ---@return ConVar convar
-function ConVar.Add(name, default_value, help_text, flags)
-	local convar = ConVar:new(name, default_value, help_text, flags)
+function ConVar.Add(name, default_value, help_text, flags, change_callback)
+	local convar = ConVar:new(name, default_value, help_text, flags, change_callback)
 
 	commands[name] = convar
 	return commands[name]

@@ -188,6 +188,40 @@ Command.Add("god", function(player_id, args)
 		end
 	end
 end, nil, "Makes you invincible", { LOCAL_ONLY = true })
+Command.Add("god_veh", function(player_id, args)
+	local veh = Self.Veh
+	if veh:IsValid() then
+		if not veh:IsInvincible() then
+			veh:SetInvincible(true)
+			log.info("Vehicle God ON")
+		else
+			veh:SetInvincible(false)
+			log.info("Vehicle God OFF")
+		end
+	end
+end, nil, "Makes your current vehicle invincible", { LOCAL_ONLY = true })
+
+Command.Add("heal", function(player_id, args)
+	local ped = Self.Ped
+	if ped:IsValid() then
+		ped:SetHealth(ped:GetMaxHealth())
+		ped:SetArmour(100)
+	end
+end, nil, "Maxes out your hp", { LOCAL_ONLY = true })
+
+local wanted_level = ConVar.Add("wanted_level", "0", "Your current wanted level", {LOCAL_ONLY=true, ARCHIVE=false}, function (args)
+	local wanted_level_to_set = tonumber(args[2])
+	if wanted_level_to_set == nil then return end
+
+	PLAYER.SET_PLAYER_WANTED_LEVEL(Self.Id, wanted_level_to_set, false)
+	PLAYER.SET_PLAYER_WANTED_LEVEL_NOW(Self.Id, false)
+end)
+script.register_looped("MaintainWantedLevelConVar", function ()
+	local current_wanted_level = PLAYER.GET_PLAYER_WANTED_LEVEL(Self.Id)
+	if current_wanted_level ~= wanted_level:GetNumber() then
+		wanted_level:SetNumber(current_wanted_level)
+	end
+end)
 
 Command.Add("kill", function(player_id, args)
 	script.run_in_fiber(function()
