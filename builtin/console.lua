@@ -4,74 +4,142 @@ local console_open = false
 -- Console UI
 local lines = {}
 local num_messages
-local console_text
 local command_buffer = ""
 local should_set_focus = false
-local command_history = {}
 local history_index = 0
 
+
+--#region DefaultConsoleInput
+
+---@class ConsoleInput
+---@field GetSuggestions fun(self, text, missing_only): table<integer, string>
+---@field OnEnter fun(input)
+---@field OnInputChanged fun(input)
+---@field GetHistory fun(): table<integer, string>
+---@field AddToHistory fun(text)
+---@field GetCurrentSuggestion fun(): string? Returns the suggestion string, or nil if there is no current selection.
+---@field SetCurrentSuggestion fun(index) Sets the current suggestion by index from `GetSuggestions`.
+---@field NextSuggestion fun()
+---@field PrevSuggestion fun()
+
+---@class DefaultConsoleInput: ConsoleInput
+---@field m_history table<integer, string>
+---@field m_suggestions_cache table<integer, string>
+---@field m_active_suggestion integer Index to the `m_suggestions_cache` array.
+DefaultConsoleInput =
+{
+	m_history = {},
+	m_suggestions_cache = {},
+	m_active_suggestion = 0
+}
+
+---Returns the suggestions the console window will display.
 ---@param text string
----@param missing_only boolean? Results will only contain the part of the string that is missing
----@return table
-local function get_suggestions(text, missing_only)
+---@return table<integer, string>
+function DefaultConsoleInput:GetSuggestionsInternal(text)
 	local command_table = Command.GetTable()
 	local args = Command.Parse(text, false)
 	local results = {}
-	local has_complitions = false
 
 	if #args == 1 then
-		for key, value in pairs(command_table) do
-			if string.startswith(key, args[1]) then
-				results[#results+1] = key
+		for name, cmd in pairs(command_table) do
+			if string.startswith(name, args[1]) then
+				results[#results+1] = name
 			end
 		end
 	elseif #args > 1 then
 		local command = command_table[args[1]]
 		if command and command.m_complition_callback then
 			results = command.m_complition_callback(args)
-			has_complitions = true
 		end
 	end
 
 	-- Display history
 	if #results == 0 and #args == 0 then
-		results = command_history
-	end
-
-	if missing_only and #results > 0 and #args > 0 then
-		local new_results = {}
-		for index, value in ipairs(results) do
-			new_results[index] = string.sub(value, #args[#args]+1)
-		end
-		results = new_results
+		results = table.reverse(self.m_history)
 	end
 	return results
 end
 
-local function add_to_history(text)
-	local already_in_history = false
-	for index, value in ipairs(command_history) do
-		if value == text then
-			already_in_history = true
-			break
-		end
-	end
-	if not already_in_history then
-		command_history[#command_history+1] = text
-		history_index = #command_history+1
-	end
+function DefaultConsoleInput:GetSuggestions(text)
+	return self.m_suggestions_cache
 end
 
-local function draw_suggestions()
-	--[[
-	if command_buffer == "" then
-		ImGui.CloseCurrentPopup()
-		return
+---Runs when you press enter in the console window.
+---@param input string Text that was in the input box when enter was pressed.
+function DefaultConsoleInput:OnEnter(input)
+	if #input > 0 then -- Don't insert empty strings to history
+		self:AddToHistory(input)
 	end
-	]]
-	local suggestions = get_suggestions(command_buffer)
-	for key, value in ipairs(suggestions) do
-		ImGui.Selectable(value, false)
+	Command.Call(Self.Id, input)
+end
+
+function DefaultConsoleInput:OnInputChanged(input)
+	self.m_suggestions_cache = self:GetSuggestionsInternal(input)
+end
+
+
+function DefaultConsoleInput:GetHistory()
+	return self.m_history
+end
+
+function DefaultConsoleInput:AddToHistory(text)
+	for index, value in ipairs(self.m_history) do
+		if value == text then
+			already_in_history = true
+			table.remove(self.m_history,index) -- Move value to the end
+			self.m_history[#self.m_history+1] = value
+			return
+		end
+	end
+
+	self.m_history[#self.m_history+1] = text
+end
+
+function DefaultConsoleInput:NextSuggestion()
+	self.m_active_suggestion = math.clamp(self.m_active_suggestion+1, 1, #self.m_suggestions_cache)
+end
+
+function DefaultConsoleInput:PrevSuggestion()
+	self.m_active_suggestion = math.clamp(self.m_active_suggestion-1, 1, #self.m_suggestions_cache)
+end
+
+function DefaultConsoleInput:GetCurrentSuggestion()
+	return self.m_suggestions_cache[self.m_active_suggestion]
+end
+
+function DefaultConsoleInput:SetCurrentSuggestion(index)
+	assert(self.m_suggestions_cache[index], "The index you privided is out of bounds")
+
+	self.m_active_suggestion = index
+end
+
+local current_input = DefaultConsoleInput
+
+--#endregion DefaultConsoleInput
+
+
+local function draw_suggestions()
+	local input_text_active = ImGui.IsItemActive()
+	if not input_text_active then return end
+
+	local suggestions = current_input:GetSuggestions(command_buffer)
+	if #suggestions == 0 then return end
+
+	ImGui.OpenPopup("##autocomplete")
+
+	local x,_ = ImGui.GetItemRectMin()
+	local _,y = ImGui.GetItemRectMax()
+	ImGui.SetNextWindowPos(x,y)
+
+	if ImGui.BeginPopup("##autocomplete", bit.bor(ImGuiWindowFlags.NoTitleBar, ImGuiWindowFlags.NoMove, ImGuiWindowFlags.NoResize, ImGuiWindowFlags.NoDocking, ImGuiWindowFlags.ChildWindow)) then
+		local current_suggestion = current_input:GetCurrentSuggestion()
+		for key, suggestion in ipairs(suggestions) do
+			if ImGui.Selectable(suggestion, suggestion == current_suggestion) then
+				current_input:SetCurrentSuggestion(key)
+			end
+		end
+		ImGui.EndPopup()
 	end
 end
 
@@ -117,23 +185,35 @@ local keytab = 512
 
 ---@param data ImGuiInputTextCallbackData
 local function callback_func(data)
-	if data.EventKey == keyup and #command_history and history_index > 1 then
-		history_index = history_index - 1
-		data:DeleteChars(0, data.BufTextLen)
-		data:InsertChars(0, command_history[history_index])
+	if data.EventKey == keyup then
+		current_input:PrevSuggestion()
 	end
-	if data.EventKey == keydown and #command_history and history_index <= #command_history then
-		history_index = history_index + 1
-		data:DeleteChars(0, data.BufTextLen)
-		data:InsertChars(0, command_history[history_index])
+	if data.EventKey == keydown then
+		current_input:NextSuggestion()
 	end
 
 	if data.EventKey == keytab and data.Buf then
-		local suggestions = get_suggestions(data.Buf, true)
-		if #suggestions == 1 then
-			data:InsertChars(data.BufTextLen, suggestions[1])
+		local suggestions = current_input:GetSuggestions(data.Buf)
+		local suggestion = #suggestions == 1 and suggestions[1] or current_input:GetCurrentSuggestion()
+		if suggestion == nil then return 0 end
+
+		local args = Command.Parse(data.Buf, false)
+
+		local missing
+		if #args > 0 then
+			missing = string.sub(suggestion, #args[#args]+1)
+		else -- Special case, when we only have whitespace in the input box.
+			data:DeleteChars(0, data.BufTextLen)
+			missing = suggestion
 		end
+		data:InsertChars(data.BufTextLen, missing)
+		current_input:OnInputChanged(data.Buf)
 	end
+
+	if data.EventFlag == ImGuiInputTextFlags.CallbackEdit then
+		current_input:OnInputChanged(data.Buf)
+	end
+
 	return 0
 end
 
@@ -162,7 +242,6 @@ event.register_handler(menu_event.Draw, "Console", function()
 
 		local width, height = ImGui.GetContentRegionAvail()
 		local log_height = height - ImGui.GetFrameHeightWithSpacing()
-		--ImGui.InputTextMultiline("##ConsoleLog", console_text, #console_text, -1, log_height, ImGuiInputTextFlags.ReadOnly)
 		ImGui.BeginChild("##logs", width, log_height, ImGuiChildFlags.FrameStyle, ImGuiWindowFlags.NoMove)
 		for index, value in ipairs(lines) do
 			set_color_from_level(value[2])
@@ -171,6 +250,7 @@ event.register_handler(menu_event.Draw, "Console", function()
 		end
 
 		text_select:update()
+
 		if ImGui.BeginPopupContextWindow() then
 			ImGui.BeginDisabled(not text_select:hasSelection())
 			if ImGui.MenuItem("Copy", "Ctrl+C") then
@@ -197,28 +277,16 @@ event.register_handler(menu_event.Draw, "Console", function()
 			ImGui.SetKeyboardFocusHere()
 		end
 		local result
-		command_buffer, result = ImGui.InputTextWithHint("##ConsoleInput", "Command", command_buffer, 1024, bit.bor(ImGuiInputTextFlags.EnterReturnsTrue, ImGuiInputTextFlags.CallbackHistory, ImGuiInputTextFlags.CallbackCompletion), callback_func)
+		command_buffer, result = ImGui.InputTextWithHint("##ConsoleInput", "Command", command_buffer, 1024, bit.bor(ImGuiInputTextFlags.EnterReturnsTrue, ImGuiInputTextFlags.CallbackHistory, ImGuiInputTextFlags.CallbackCompletion, ImGuiInputTextFlags.CallbackEdit), callback_func)
 		if(result) then
-			if #command_buffer > 0 then -- Don't insert empty strings to history
-				add_to_history(command_buffer)
-			end
-			Command.Call(Self.Id, command_buffer)
+			current_input:OnEnter(command_buffer)
+			history_index = #current_input:GetHistory() + 1
 			command_buffer = ""
 			should_set_focus = true
+			current_input:OnInputChanged(command_buffer)
 		end
 
-		local input_text_active = ImGui.IsItemActive()
-		if input_text_active then
-			ImGui.OpenPopup("##autocomplete")
-		end
-
-		local x,_ = ImGui.GetItemRectMin()
-		local _,y = ImGui.GetItemRectMax()
-		ImGui.SetNextWindowPos(x,y)
-		if ImGui.BeginPopup("##autocomplete", bit.bor(ImGuiWindowFlags.NoTitleBar, ImGuiWindowFlags.NoMove, ImGuiWindowFlags.NoResize, ImGuiWindowFlags.NoDocking, ImGuiWindowFlags.ChildWindow)) then
-			draw_suggestions()
-			ImGui.EndPopup()
-		end
+		draw_suggestions()
 	end
 	ImGui.End()
 end)
@@ -259,6 +327,6 @@ script.register_looped("ConsoleInputLock", function (script)
 end)
 
 Command.Add("clear_history", function (player_id, args)
-	command_history = {}
+	log.warning("FIXME: Not implemented!")
 	history_index = 0
 end, nil, "Clears the command history", {LOCAL_ONLY=true})

@@ -1,10 +1,15 @@
 local ffi = require("ffi")
 
 Command.Add("lua_openscript", function(player_id, args)
-	local file, error = loadfile("BadAPI/scripts/" .. args[2])
+	local filename = args[2]
+	if filename == nil then
+		log.warning("Invalid file")
+	end
+
+	local file, error = loadfile("BadAPI/scripts/" .. filename)
 	if file then
 		file()
-		log.info("Loaded: " .. args[2])
+		log.info("Loaded: " .. filename)
 	else
 		log.warning(tostring(error))
 	end

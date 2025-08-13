@@ -128,7 +128,7 @@ function Command.Call(player_id, cmd, hide_input)
 	local name = args[1]
 	if name then
 		if commands[name] then
-			commands[name].m_callback(player_id, args)
+			pcall(commands[name].m_callback, player_id, args)
 			return true
 		end
 		log_warning("Command: " .. tostring(name) .. " not found")
