@@ -131,12 +131,15 @@ local function draw_suggestions()
 	local x,_ = ImGui.GetItemRectMin()
 	local _,y = ImGui.GetItemRectMax()
 	ImGui.SetNextWindowPos(x,y)
+	ImGui.SetNextWindowSizeConstraints(0,0, 300, 400)
 
 	if ImGui.BeginPopup("##autocomplete", bit.bor(ImGuiWindowFlags.NoTitleBar, ImGuiWindowFlags.NoMove, ImGuiWindowFlags.NoResize, ImGuiWindowFlags.NoDocking, ImGuiWindowFlags.ChildWindow)) then
 		local current_suggestion = current_input:GetCurrentSuggestion()
 		for key, suggestion in ipairs(suggestions) do
-			if ImGui.Selectable(suggestion, suggestion == current_suggestion) then
-				current_input:SetCurrentSuggestion(key)
+			local selected = suggestion == current_suggestion
+			ImGui.Selectable(suggestion, selected)
+			if selected then
+				ImGui.SetScrollHereY()
 			end
 		end
 		ImGui.EndPopup()
