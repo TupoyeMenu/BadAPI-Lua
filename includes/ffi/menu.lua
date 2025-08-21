@@ -136,9 +136,8 @@ ffi.cdef[[
 
 ]]
 
-local menu_path = get_dll_path()
+local menu_path = menu.get_dll_path()
 if menu_path then
-	---@type ffilib
 	menu_exports = ffi.load(menu_path)
 else
 	log.fatal("Failed to get the path to our dll, ffi functions will fail.")
