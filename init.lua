@@ -33,3 +33,5 @@ require("includes.teleport")
 
 --require("includes.scripted_entity")
 require("includes.scripted_weapon")
+
+require("includes.console")

@@ -6,21 +6,21 @@ local lines = {}
 local num_messages
 local command_buffer = ""
 local should_set_focus = false
-local history_index = 0
-
-
---#region DefaultConsoleInput
 
 ---@class ConsoleInput
 ---@field GetSuggestions fun(self, text, missing_only): table<integer, string>
----@field OnEnter fun(input)
----@field OnInputChanged fun(input)
----@field GetHistory fun(): table<integer, string>
----@field AddToHistory fun(text)
----@field GetCurrentSuggestion fun(): string? Returns the suggestion string, or nil if there is no current selection.
----@field SetCurrentSuggestion fun(index) Sets the current suggestion by index from `GetSuggestions`.
----@field NextSuggestion fun()
----@field PrevSuggestion fun()
+---@field OnEnter fun(self, text)
+---@field OnTextChanged fun(self, text)
+---@field GetHistory fun(self): table<integer, string>
+---@field AddToHistory fun(self, text)
+---@field GetCurrentSuggestion fun(self): string? Returns the suggestion string, or nil if there is no current selection.
+---@field SetCurrentSuggestion fun(self, index) Sets the current suggestion by index from `GetSuggestions`.
+---@field NextSuggestion fun(self)
+---@field PrevSuggestion fun(self)
+---@field OnInputClassChanged fun(self) Called when we are switching to a different `ConsoleInput` class.
+
+
+--#region DefaultConsoleInput
 
 ---@class DefaultConsoleInput: ConsoleInput
 ---@field m_history table<integer, string>
@@ -66,16 +66,16 @@ function DefaultConsoleInput:GetSuggestions(text)
 end
 
 ---Runs when you press enter in the console window.
----@param input string Text that was in the input box when enter was pressed.
-function DefaultConsoleInput:OnEnter(input)
-	if #input > 0 then -- Don't insert empty strings to history
-		self:AddToHistory(input)
+---@param text string Text that was in the input box when enter was pressed.
+function DefaultConsoleInput:OnEnter(text)
+	if #text > 0 then -- Don't insert empty strings to history
+		self:AddToHistory(text)
 	end
-	Command.Call(Self.Id, input)
+	Command.Call(Self.Id, text)
 end
 
-function DefaultConsoleInput:OnInputChanged(input)
-	self.m_suggestions_cache = self:GetSuggestionsInternal(input)
+function DefaultConsoleInput:OnTextChanged(text)
+	self.m_suggestions_cache = self:GetSuggestionsInternal(text)
 end
 
 
@@ -114,10 +114,38 @@ function DefaultConsoleInput:SetCurrentSuggestion(index)
 	self.m_active_suggestion = index
 end
 
-local current_input = DefaultConsoleInput
+function DefaultConsoleInput:OnInputClassChanged()
+end
 
 --#endregion DefaultConsoleInput
 
+---@type ConsoleInput
+local current_input = DefaultConsoleInput
+
+
+Console = {}
+
+---Checks if we are using the default input.
+---@return boolean
+function Console.IsUsingDefaultInput()
+	return current_input == DefaultConsoleInput
+end
+
+
+---Sets the current ConsoleInput.
+---
+---@param console_input ConsoleInput
+function Console.SetInputClass(console_input)
+	assert(istable(console_input), "bad argument 'console_input' for 'Console.SetInput'.\nExpected table got " .. type(console_input) .. "\nIn:")
+
+	current_input:OnInputClassChanged()
+	current_input = console_input
+end
+
+---Sets the input to `DefaultConsoleInput`
+function Console.ResetInputClass()
+	Console.SetInputClass(DefaultConsoleInput)
+end
 
 local function draw_suggestions()
 	local input_text_active = ImGui.IsItemActive()
@@ -131,7 +159,7 @@ local function draw_suggestions()
 	local x,_ = ImGui.GetItemRectMin()
 	local _,y = ImGui.GetItemRectMax()
 	ImGui.SetNextWindowPos(x,y)
-	ImGui.SetNextWindowSizeConstraints(0,0, 300, 400)
+	ImGui.SetNextWindowSizeConstraints(0,0, 600, 400)
 
 	if ImGui.BeginPopup("##autocomplete", bit.bor(ImGuiWindowFlags.NoTitleBar, ImGuiWindowFlags.NoMove, ImGuiWindowFlags.NoResize, ImGuiWindowFlags.NoDocking, ImGuiWindowFlags.ChildWindow)) then
 		local current_suggestion = current_input:GetCurrentSuggestion()
@@ -210,11 +238,11 @@ local function callback_func(data)
 			missing = suggestion
 		end
 		data:InsertChars(data.BufTextLen, missing)
-		current_input:OnInputChanged(data.Buf)
+		current_input:OnTextChanged(data.Buf)
 	end
 
 	if data.EventFlag == ImGuiInputTextFlags.CallbackEdit then
-		current_input:OnInputChanged(data.Buf)
+		current_input:OnTextChanged(data.Buf)
 	end
 
 	return 0
@@ -286,7 +314,7 @@ event.register_handler(menu_event.Draw, "Console", function()
 			history_index = #current_input:GetHistory() + 1
 			command_buffer = ""
 			should_set_focus = true
-			current_input:OnInputChanged(command_buffer)
+			current_input:OnTextChanged(command_buffer)
 		end
 
 		draw_suggestions()

@@ -1,32 +1,5 @@
 local ffi = require("ffi")
 
-Command.Add("lua_openscript", function(player_id, args)
-	local filename = args[2]
-	if filename == nil then
-		log.warning("Invalid file")
-	end
-
-	local file, error = loadfile("BadAPI/scripts/" .. filename)
-	if file then
-		file()
-		log.info("Loaded: " .. filename)
-	else
-		log.warning(tostring(error))
-	end
-end)
-Command.Add("lua_run", function(player_id, args)
-	assert(loadstring(args[2]))()
-end)
-Command.Add("lua_eval", function(player_id, args)
-	local func, err = loadstring("return " .. args[2])
-	if func then
-		local res = func()
-		log.info(tostring(res))
-	elseif err then
-		log.fatal(err)
-	end
-end)
-
 Command.Add("unload", function(player_id, args)
 	event.trigger(menu_event.MenuUnloaded)
 	menu_exports.unload()
@@ -248,3 +221,7 @@ Command.Add("toggle_black_screen", function(player_id, args)
 		end
 	end)
 end, nil, "Blacks out your screen and stops the game from rendering the world", { LOCAL_ONLY = true })
+
+Command.Add("exit", function(player_id, args)
+	os.exit()
+end, nil, "Closes the game.", { LOCAL_ONLY = true })
