@@ -275,12 +275,12 @@ event.register_handler("InitNativeTables", "ProgramStartTest", function (program
 	program = ffi.cast("struct scrProgram*", program)
 	if program == nil then return end
 
-	for _, _local in ipairs(Globals.m_global_cache) do
+	for _, _local in ipairs(Locals.m_local_cache) do
 		if joaat(_local.m_script_name) == program.m_NameHash and _local.m_index == nil and not _local.m_is_invalid and not _local.m_is_manual then
-			_local.m_index = read_bytes_from_pattern(program, _local.m_pattern, _local.m_offset, 3)
+			_local.m_index = read_bytes_from_pattern(program, _local.m_pattern, _local.m_offset, _local.m_length)
 			if _local.m_index == nil then
 				_local.m_is_invalid = true
-				log.warning('Failed to find global: "' .. _local.m_name .. '" in script: "' .. _local.m_script_name .. '"')
+				log.warning('Failed to find local: "' .. _local.m_name .. '" in script: "' .. _local.m_script_name .. '"')
 			end
 		end
 	end

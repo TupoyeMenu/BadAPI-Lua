@@ -191,7 +191,7 @@ end
 ---@param offset integer Offset from the pattern
 ---@param num_bytes integer Length of the global index in bytes, must be <= 4
 ---@return ScriptGlobal # The global structure. You can use `IsFound` in this class to check if the global was found.
-function Globals.FindPattern(global_name, script_name, pattern, offset, num_bytes)
+function Globals.FindByPattern(global_name, script_name, pattern, offset, num_bytes)
 	local global = ScriptGlobal:new
 	{
 		m_name = global_name,
