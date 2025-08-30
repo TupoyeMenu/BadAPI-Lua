@@ -9,12 +9,12 @@ ffi.cdef[[
 # 1 "gta.c"
 # 9 "gta.c"
 #pragma pack(push, 8)
-typedef struct
+struct atArray
 {
  void* m_data;
  uint16_t m_size;
  uint16_t m_count;
-} atArray;
+};
 #pragma pack(pop)
 
 
@@ -505,7 +505,7 @@ struct CHandlingData
  uint32_t strDamageFlags;
  uint32_t AIHandling;
  char pad_140[24];
- atArray SubHandlingData;
+ struct atArray SubHandlingData;
  float fWeaponDamageScaledToVehHealthMult;
 };
 #pragma pack(pop)
@@ -593,7 +593,7 @@ struct CCarHandlingData
  float fJumpForceScale;
  float fIncreasedRammingForceScale;
  uint32_t strAdvancedFlags;
- atArray AdvancedData;
+ struct atArray AdvancedData;
 };
 #pragma pack(pop)
 
@@ -842,6 +842,7 @@ struct scrNativeCallContext
  fvector4 m_buffer[4];
 };
 
+typedef void(*scrNativeHandler)(struct scrNativeCallContext*);
 
 enum eThreadState
 {
@@ -911,6 +912,43 @@ struct GtaThread
  char m_padding7[0x0F];
 };
 
+struct scrProgram
+{
+ char m_pgBase[16];
+ uint8_t** m_CodeBlocks;
+ uint32_t m_GlobalHash;
+ uint32_t m_CodeSize;
+ uint32_t m_ArgCount;
+ uint32_t m_LocalCount;
+ uint32_t m_GlobalCount;
+ uint32_t m_NativeCount;
+ union scrValue *m_LocalData;
+ union scrValue **m_GlobalData;
+ scrNativeHandler *m_NativeEntrypoints;
+ uint32_t m_ProcCount;
+ char pad_004C[4];
+ const char** m_ProcNames;
+ uint32_t m_NameHash;
+ uint32_t m_RefCount;
+ const char* m_Name;
+ const char** m_StringsData;
+ uint32_t m_StringsCount;
+ char m_Breakpoints[0x0C];
+};
+
+struct scrProgramTableEntry
+{
+ struct scrProgram* m_Program;
+ char m_Pad1[0x04];
+ uint32_t m_Hash;
+};
+
+struct scrProgramTable
+{
+ struct scrProgramTableEntry* m_Data;
+ char m_Padding[0x10];
+ uint32_t m_Size;
+};
 
 enum eInputMethod
 {
@@ -1046,8 +1084,8 @@ struct rlGamerInfo
 
 struct CBattlEyePlayerModifyContext
 {
- atArray m_Ticket;
- atArray m_GamerHandleHash;
+ struct atArray m_Ticket;
+ struct atArray m_GamerHandleHash;
  struct netSocketAddress m_Address;
  uint64_t m_HostToken;
  char m_Name[17];

@@ -241,7 +241,7 @@ end
 ---Removes all upgrades from the vehicle
 function Vehicle:Downgrade()
 	VEHICLE.SET_VEHICLE_MOD_KIT(self.m_Handle, 0);
-	for i = 0, 50, 1 do
+	for i = 0, 50-1 do
 		VEHICLE.REMOVE_VEHICLE_MOD(self.m_Handle, i)
 	end
 end

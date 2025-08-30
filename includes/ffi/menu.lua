@@ -39,6 +39,9 @@ ffi.cdef[[
 	uint32_t get_screen_resolution_y();
 	bool queue_packet(struct netConnectionManager* mgr, int msg_id, void* data, int size, int flags, uint16_t* out_seq_id);
 	struct CNetworkPlayerMgr* get_network_player_mgr();
+	struct scrProgramTable* get_script_program_table();
+	struct atArray* get_script_threads();
+	int64_t** get_script_globals();
 
 #pragma pack(push, 8)
 	typedef struct

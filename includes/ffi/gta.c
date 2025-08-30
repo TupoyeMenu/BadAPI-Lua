@@ -7,12 +7,12 @@
 #endif
 
 #pragma pack(push, 8)
-typedef struct
+struct atArray
 {
 	void* m_data;
 	uint16_t m_size;
 	uint16_t m_count;
-} atArray;
+};
 #pragma pack(pop)
 
 
@@ -503,7 +503,7 @@ struct CHandlingData
 	uint32_t strDamageFlags;
 	uint32_t AIHandling;
 	char pad_140[24];
-	atArray SubHandlingData;
+	struct atArray SubHandlingData;
 	float fWeaponDamageScaledToVehHealthMult;
 };
 #pragma pack(pop)
@@ -591,7 +591,7 @@ struct CCarHandlingData
 	float fJumpForceScale;
 	float fIncreasedRammingForceScale;
 	uint32_t strAdvancedFlags;
-	atArray AdvancedData;
+	struct atArray AdvancedData;
 };
 #pragma pack(pop)
 
@@ -840,6 +840,7 @@ struct scrNativeCallContext
 	fvector4 m_buffer[4];
 };
 
+typedef void(*scrNativeHandler)(struct scrNativeCallContext*);
 
 enum eThreadState
 {
@@ -909,6 +910,43 @@ struct GtaThread
 	char m_padding7[0x0F];                     // 0x149
 };
 
+struct scrProgram
+{
+	char m_pgBase[16];
+	uint8_t** m_CodeBlocks;                // 0x10
+	uint32_t m_GlobalHash;                 // 0x18
+	uint32_t m_CodeSize;                   // 0x1C
+	uint32_t m_ArgCount;                   // 0x20
+	uint32_t m_LocalCount;                 // 0x24
+	uint32_t m_GlobalCount;                // 0x28
+	uint32_t m_NativeCount;                // 0x2C
+	union scrValue *m_LocalData;           // 0x30
+	union scrValue **m_GlobalData;         // 0x38
+	scrNativeHandler *m_NativeEntrypoints; // 0x40
+	uint32_t m_ProcCount;                  // 0x48
+	char pad_004C[4];                      // 0x4C
+	const char** m_ProcNames;              // 0x50
+	uint32_t m_NameHash;                   // 0x58
+	uint32_t m_RefCount;                   // 0x5C
+	const char* m_Name;                    // 0x60
+	const char** m_StringsData;            // 0x68
+	uint32_t m_StringsCount;               // 0x70
+	char m_Breakpoints[0x0C];              // 0x74 This is an atMap, which we don't have the class for ATM.
+};
+
+struct scrProgramTableEntry
+{
+	struct scrProgram* m_Program; // 0x00
+	char m_Pad1[0x04];            // 0x08
+	uint32_t m_Hash;              // 0x0C
+};
+
+struct scrProgramTable
+{
+	struct scrProgramTableEntry* m_Data;    // 0x00
+	char m_Padding[0x10];            // 0x08
+	uint32_t m_Size;                 // 0x18
+};
 
 enum eInputMethod
 {
@@ -1044,8 +1082,8 @@ struct rlGamerInfo
 
 struct CBattlEyePlayerModifyContext
 {
-	atArray m_Ticket;
-	atArray m_GamerHandleHash;
+	struct atArray m_Ticket;
+	struct atArray m_GamerHandleHash;
 	struct netSocketAddress m_Address;
 	uint64_t m_HostToken;
 	char m_Name[17];

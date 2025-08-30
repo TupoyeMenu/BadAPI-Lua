@@ -129,7 +129,7 @@ ffi.metatype("struct Obf32", {
 			_self.m_unk2 = v48
 		end
 	}
-});
+})
 
 
 ffi.metatype("struct datBitBuffer", {
@@ -161,4 +161,71 @@ ffi.metatype("struct datBitBuffer", {
 			end
 		end
 	}
-});
+})
+
+ffi.metatype("struct scrProgram", {
+	__index = {
+		IsValid = function (self)
+			return self.m_CodeSize ~= 0
+		end,
+		GetNumCodePages = function (self)
+			return bit.rshift(self.m_CodeSize + 0x3FFF, 14)
+		end,
+		GetCodePageSize = function (self, page)
+			local num = bit.rshift(self.m_CodeSize + 0x3FFF, 14)
+			if page < num then
+				if (page == num - 1) then
+					return bit.band(self.m_CodeSize, 0x3FFF)
+				end
+				return 0x4000
+			end
+			return 0
+		end,
+		GetFullCodeSize = function (self)
+			return self.m_CodeSize
+		end,
+		GetCodePage = function (self, page)
+			return self.m_CodeBlocks[page]
+		end,
+		GetCodeAddress = function (self, index)
+			if (index < self.m_CodeSize) then
+				return self.m_CodeBlocks[bit.rshift(index, 14)]+bit.band(index, 0x3FFF)
+			end
+
+			return nil
+		end,
+		GetString = function (self, index)
+			if (index < self.m_StringsCount) then
+				return ffi.string(self.m_StringsData[bit.rshift(index, 14)]+bit.band(index, 0x3FFF))
+			end
+
+			return nil
+		end,
+		GetAddressOfNativeEntrypoint = function (self, entrypoint)
+			for i = 0, self.m_NativeCount-1 do
+				if (self.m_NativeEntrypoints[i] == entrypoint) then
+					return self.m_NativeEntrypoints + i;
+				end
+			end
+
+			return nil
+		end
+	}
+})
+
+ffi.metatype("struct scrProgramTable", {
+	__index = {
+		FindScript = function (self, hash)
+			for i = 0, self.m_Size-1 do
+				if self.m_Data[i].m_Hash == hash then
+					return self.m_Data[i].m_Program
+				end
+			end
+
+			return nil
+		end,
+	},
+	__len = function (self)
+		return self.m_Size
+	end
+})
