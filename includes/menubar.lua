@@ -52,7 +52,10 @@ event.register_handler("Draw", "MenuBar", function ()
 
 	for name, window in pairs(MenuBar.m_windows) do
 		if window:IsOpen() then
-			pcall(window.RenderCallback, window)
+			local success, err = pcall(window.RenderCallback, window)
+			if not success then
+				log.fatal(err)
+			end
 		end
 	end
 end)

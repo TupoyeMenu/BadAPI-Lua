@@ -412,10 +412,10 @@ else
 end
 
 
----@param include_missing_vehicles boolean?
----@return table?
+---@param include_missing_vehicles boolean? Should we include vehicles from DLCs that we don't have.
+---@return table<integer, table>
 function Vehicle.GetDataForAllVehicles(include_missing_vehicles)
-	if vehicles_table == nil then return end
+	assert(vehicles_table)
 	local result_table = {}
 	for key, value in ipairs(vehicles_table) do
 		if (include_missing_vehicles or value.DlcName == "TitleUpdate" or is_dlc_present(menu_exports.joaat(value.DlcName))) then
@@ -425,11 +425,11 @@ function Vehicle.GetDataForAllVehicles(include_missing_vehicles)
 	return result_table
 end
 
----@param include_missing_vehicles boolean?
----@return table?
+---@param include_missing_vehicles boolean? Should we include vehicles from DLCs that we don't have.
+---@return table<integer, string>
 function Vehicle.GetAllVehicleModels(include_missing_vehicles)
 	local all_vehicles = Vehicle.GetDataForAllVehicles(include_missing_vehicles)
-	if all_vehicles == nil then return end
+	assert(all_vehicles)
 
 	local result_table = {}
 	for key, value in ipairs(all_vehicles) do

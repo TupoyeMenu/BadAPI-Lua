@@ -132,6 +132,8 @@ function Globals.GetPtr(index)
 	return menu_exports.get_script_globals()[bit.band(bit.rshift(index, 0x12), 0x3F)] + (bit.band(index, 0x3FFFF))
 end
 
+---@param index integer Global index to get.
+---@return ScriptGlobal
 function Globals.Get(index)
 	local global = {
 		m_name = nil,

@@ -142,6 +142,8 @@ function Locals.GetPtr(stack, index)
 	return ffi.cast("uint64_t", stack) + (index * 8)
 end
 
+---@param index integer Local index to get.
+---@return ScriptLocal
 function Locals.Get(index)
 	local global = {
 		m_name = nil,

@@ -9,7 +9,7 @@ local tostring = tostring
 ---@class Command
 ---@field m_name string
 ---@field m_flags command_flags
----@field m_help_text string
+---@field m_help_text string?
 ---@field m_callback function
 ---@field m_complition_callback function
 Command = {}
@@ -69,7 +69,7 @@ function Command:GetName()
 	return self.m_name
 end
 
----@return string
+---@return string?
 function Command:GetHelpText()
 	return self.m_help_text
 end
@@ -112,6 +112,9 @@ function Command.Parse(command_string, allow_warnings)
 	return args
 end
 
+---FIXME: This API is dumb and should be changed.
+---If we already have a `Command` object we can't call it directly.
+---@deprecated
 ---@param player_id number Player that called this command
 ---@param cmd string The command as a string
 ---@param hide_input? boolean Don't show that we ran the command in the console. Default: false
