@@ -69,14 +69,14 @@ function freecam.on_tick()
 	-- Right
 	vecChange.x = vecChange.x + freecam.speed * PAD.GET_DISABLED_CONTROL_NORMAL(0, INPUT_MOVE_RIGHT_ONLY)
 
-	if vecChange.x == 0 and vecChange.y == 0 and vecChange.z == 0 and PAD.GET_DISABLED_CONTROL_NORMAL(0, INPUT_MOVE_UP) == 0 then
+	if vecChange.x == 0 and vecChange.y == 0 and vecChange.z == 0 and PAD.GET_DISABLED_CONTROL_NORMAL(0, INPUT_MOVE_UD) == 0 then
 		freecam.mult = 0
 	elseif freecam.mult < 10 then
 		freecam.mult = freecam.mult + 0.15
 	end
 
 	local rot   = CAM.GET_CAM_ROT(freecam.camera, 0)
-	local forward = math.rotation_to_direction(rot)*PAD.GET_DISABLED_CONTROL_NORMAL(0, INPUT_MOVE_UP)*-1*freecam.speed
+	local forward = math.rotation_to_direction(rot)*PAD.GET_DISABLED_CONTROL_NORMAL(0, INPUT_MOVE_UD)*-1*freecam.speed
 	local yaw = math.rad(rot.z) -- horizontal
 
 	if forward then
