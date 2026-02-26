@@ -312,6 +312,11 @@ end
 ---@return ConVar convar
 function ConVar.Add(name, default_value, help_text, flags, change_callback)
 	local convar = ConVar:new(name, default_value, help_text, flags, change_callback)
+	local existing_cvar = commands[name]
+
+	if existing_cvar and isstring(existing_cvar.m_value) then
+		convar.m_value = existing_cvar.m_value
+	end
 
 	commands[name] = convar
 	return commands[name]
