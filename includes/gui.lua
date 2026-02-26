@@ -1,8 +1,11 @@
 
+_GUI_FONTS = _GUI_FONTS or {}
+
 Gui =
 {
 	m_is_open = false,
 	m_override_mouse = false,
+	m_fonts = _GUI_FONTS,
 }
 
 local cursor_coords = vec2.zero()
@@ -137,7 +140,16 @@ function Gui.SetDefaultStyle()
 	colors[ImGuiCol.ModalWindowDimBg]      = ImVec4:new(0.80, 0.80, 0.80, 0.35);
 end
 
-Gui.SetDefaultStyle()
+function Gui.Init()
+	Gui.SetDefaultStyle()
+
+	local io = ImGui.GetIO()
+	local cfg = ImFontConfig:new()
+
+	_GUI_FONTS["Default"] = io.Fonts:AddFontDefault(cfg)
+end
+
+Gui.Init()
 
 event.register_handler("EarlyDraw", "MaintainInternalGui", function ()
 	ImGui.DockSpaceOverViewport(0, nil, ImGuiDockNodeFlags.PassthruCentralNode)

@@ -254,6 +254,10 @@ event.register_handler(menu_event.Draw, "Console", function()
 
 	local x = menu_exports.get_screen_resolution_x() * 0.4
 	local y = menu_exports.get_screen_resolution_y() * 0.6
+
+	-- Push monospace font
+	ImGui.PushFont(Gui.m_fonts["Default"], 0)
+
 	ImGui.SetNextWindowSize(x,y, ImGuiCond.FirstUseEver)
 	if(ImGui.Begin("Console", ImGuiWindowFlags.NoScrollbar)) then
 		local messages = log.get_log_messages()
@@ -320,6 +324,8 @@ event.register_handler(menu_event.Draw, "Console", function()
 		draw_suggestions()
 	end
 	ImGui.End()
+
+	ImGui.PopFont()
 end)
 
 --The pause menu really hates anything that uses escape, block it for 10 frames after we closed
