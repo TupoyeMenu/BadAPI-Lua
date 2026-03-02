@@ -14,7 +14,9 @@ Self =
 	CharIndex = 0,
 
 	Pos = vec3.zero(),
+	Vel = vec3.zero(),
 	Rot = vec3.zero(),
+	RotVel = vec3.zero(),
 }
 
 local MPPLY_LAST_MP_CHAR = joaat("MPPLY_LAST_MP_CHAR")
@@ -55,5 +57,7 @@ script.register_looped("MaintainSelf", function ()
 	end
 
 	Self.Pos = ENTITY.GET_ENTITY_COORDS(ped_id, false)
+	Self.Vel = ENTITY.GET_ENTITY_VELOCITY(ped_id)
 	Self.Rot = ENTITY.GET_ENTITY_ROTATION(ped_id, 2)
+	Self.RotVel = ENTITY.GET_ENTITY_ROTATION_VELOCITY(ped_id)
 end)

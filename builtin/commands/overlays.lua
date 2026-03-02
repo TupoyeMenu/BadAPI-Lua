@@ -6,8 +6,10 @@ local TEXT_COLOR = ImGui.GetColorU32(1,1,1,1)
 local function draw_showpos()
 	local pos = Self.Pos
 	local ang = Self.Rot
+	local vel = Self.Vel
 	local pos_text = string.format("pos: %.02f %.02f %.02f", pos.x, pos.y, pos.z)
 	local ang_text = string.format("ang: %.02f %.02f %.02f", ang.x, ang.y, ang.z)
+	local vel_text = string.format("vel: %.02f", vel:length())
 
 	local res_x = menu_exports.get_screen_resolution_x()
 	local res_y = menu_exports.get_screen_resolution_y()
@@ -15,8 +17,10 @@ local function draw_showpos()
 
 	local pos_w, pos_h = ImGui.CalcTextSize(pos_text)
 	local ang_w, ang_h = ImGui.CalcTextSize(ang_text)
+	local vel_w, vel_h = ImGui.CalcTextSize(vel_text)
 	ImGui.ImDrawListAddText(dl, res_x-pos_w, pos_h, TEXT_COLOR, pos_text)
 	ImGui.ImDrawListAddText(dl, res_x-ang_w, pos_h*2, TEXT_COLOR, ang_text)
+	ImGui.ImDrawListAddText(dl, res_x-vel_w, pos_h*3, TEXT_COLOR, vel_text)
 end
 
 local function draw_showfps()
